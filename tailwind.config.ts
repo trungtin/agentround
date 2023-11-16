@@ -1,20 +1,40 @@
-import type { Config } from 'tailwindcss'
+const generateColorClass = (variable) => {
+  return ({ opacityValue }) =>
+    opacityValue
+      ? `rgba(var(--${variable}), ${opacityValue})`
+      : `rgb(var(--${variable}))`
+}
 
-const config: Config = {
-  content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+const textColor = {
+  primary: generateColorClass('text-primary'),
+}
+
+const backgroundColor = {
+  primary: generateColorClass('bg-primary'),
+  secondary: generateColorClass('bg-secondary'),
+  tertiary: generateColorClass('bg-tertiary'),
+}
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      textColor,
+      backgroundColor,
+      colors: {
+        primary: generateColorClass('primary'),
+        bg: {
+          ...backgroundColor,
+        },
+        text: {
+          ...textColor,
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar')({ nocompatible: true }),
+    require('@tailwindcss/typography'),
+  ],
 }
-export default config
