@@ -10,7 +10,7 @@ function MessageRole({ message }: { message: Props['message'] }) {
     message.assistant_id && `/assistants/${message.assistant_id}`
   )
   return (
-    <div className="p-1 font-bold">
+    <div className="text-sm font-bold">
       {message.role === 'user' ? 'User' : data?.name || 'Assistant'}
     </div>
   )
@@ -18,7 +18,7 @@ function MessageRole({ message }: { message: Props['message'] }) {
 
 function MessageContent({ message }: { message: Props['message'] }) {
   return (
-    <div className="p-1">
+    <div className="">
       {message.content?.map((content, idx) => {
         content
         if (content.type == 'text') {
@@ -38,7 +38,7 @@ function MessageContent({ message }: { message: Props['message'] }) {
 
 export default function ThreadMessage({ message }: Props) {
   return (
-    <div>
+    <div className="mb-3 py-3">
       <div>
         {/* author */}
         <span>{<MessageRole message={message} />}</span>

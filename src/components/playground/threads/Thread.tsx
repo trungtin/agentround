@@ -15,8 +15,10 @@ function Thread({ thread_id }: { thread_id: string }) {
   >(`/api/threads/${thread_id}/messages`)
 
   return (
-    <div className="min-w-[300px]">
-      <ThreadMessages messages={messages?.data}></ThreadMessages>
+    <div className="w-[540px] px-4 py-4">
+      <div className="">
+        <ThreadMessages messages={messages?.data}></ThreadMessages>
+      </div>
       <ThreadInput />
     </div>
   )
