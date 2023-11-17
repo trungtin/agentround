@@ -17,3 +17,15 @@
     --bg-tertiary: 55, 65, 81;
   }
 }
+
+.note-columns-container {
+  display: flex;
+  flex-grow: 1;
+  transition: width 100ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@media screen and (max-width: 800px) {
+  .note-columns-container {
+    width: unset !important;
+  }
+}
