@@ -25,7 +25,6 @@ export default function Playground() {
       return acc.concat(cur.split(','))
     }, [] as string[])
     .filter(Boolean)
-  console.log(thread_ids)
   return (
     <React.Fragment>
       <Head>

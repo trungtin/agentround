@@ -1,25 +1,25 @@
-import { useApi } from '@/context/swr'
+import { useApi, useMutation } from '@/context/swr'
 import { CursorPageResponse, Threads } from '@/types'
-import openai from 'openai'
+import { KeyedMutator } from 'swr'
 import ThreadInput from './ThreadInput'
 import ThreadMessages from './ThreadMessages'
 
-openai.Beta.Threads
-
-openai.Page
-
 function Thread({ thread_id }: { thread_id: string }) {
   const { data: thread } = useApi<Threads.Thread>(`/api/threads/${thread_id}`)
-  const { data: messages, mutate: postMessage } = useApi<
-    CursorPageResponse<Threads.ThreadMessage>
-  >(`/api/threads/${thread_id}/messages`)
+  const messagesPath = `/api/threads/${thread_id}/messages`
+  const { data: messages } =
+    useApi<CursorPageResponse<Threads.ThreadMessage>>(messagesPath)
+  const { trigger: addMessage } = useMutation<
+    Threads.MessageCreateParams,
+    Threads.ThreadMessage
+  >(messagesPath)
 
   return (
-    <div className="w-[540px] px-4 py-4">
+    <div className="flex h-full w-[540px] flex-col justify-between px-4 py-4">
       <div className="">
         <ThreadMessages messages={messages?.data}></ThreadMessages>
       </div>
-      <ThreadInput />
+      <ThreadInput addMessage={addMessage} />
     </div>
   )
 }
