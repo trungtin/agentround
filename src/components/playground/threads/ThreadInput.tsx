@@ -76,16 +76,20 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
       })
   }, [apiAddMessage, input, files, trigger])
 
+  const onInputChange = useCallback(
+    (e) => {
+      setInput(e.target.value)
+    },
+    [setInput]
+  )
   return (
-    <div className="border-gray-3 00 -mx-2 space-y-2 rounded-lg border p-4 shadow-xl">
+    <div className="border-gray-3 -mx-2 space-y-2 rounded-lg border p-4 shadow-xl">
       <Input
         className="focus-visible:!border-none focus-visible:!shadow-none"
         placeholder="Enter your message...."
         border="none"
         value={input}
-        onChange={(e) => {
-          setInput(e.target.value)
-        }}
+        onChange={onInputChange}
       ></Input>
       <ButtonGroup size="sm" className="flex space-x-2">
         <Button

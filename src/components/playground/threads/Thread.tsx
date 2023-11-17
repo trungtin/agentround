@@ -1,6 +1,6 @@
 import { useApi, useMutation } from '@/context/swr'
 import { CursorPageResponse, Threads } from '@/types'
-import { KeyedMutator } from 'swr'
+import { memo } from 'react'
 import ThreadInput from './ThreadInput'
 import ThreadMessages from './ThreadMessages'
 
@@ -15,13 +15,15 @@ function Thread({ thread_id }: { thread_id: string }) {
   >(messagesPath)
 
   return (
-    <div className="flex h-full w-[540px] flex-col justify-between px-4 py-4">
-      <div className="">
+    <div className="flex h-full w-[540px] flex-col justify-between py-4">
+      <div className="pb-4">
         <ThreadMessages messages={messages?.data}></ThreadMessages>
       </div>
-      <ThreadInput addMessage={addMessage} />
+      <div className="sticky bottom-4 bg-white">
+        <ThreadInput addMessage={addMessage} />
+      </div>
     </div>
   )
 }
 
-export default Thread
+export default memo(Thread)

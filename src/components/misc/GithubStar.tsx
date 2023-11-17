@@ -9,7 +9,7 @@ export default function GithubStar({}: Props) {
       If you like this project, please consider starring it on Github!
       <Link
         className="duration-800 mt-4 flex items-center gap-x-3 rounded-full border border-white bg-secondary px-4 py-2 text-primary"
-        href="https://github.com/Nashex/gpt4-playground"
+        href="https://github.com/trungtin/agents-playground"
       >
         Star Me! <BsGithub className="text-3xl" />
       </Link>

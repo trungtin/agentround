@@ -30,16 +30,14 @@ export default function Playground() {
       <Head>
         <title>OpenAI Playground Assistant</title>
       </Head>
-      <main className="max-w-screen relative flex max-h-screen w-screen flex-col">
+      <main className="max-w-screen relative flex h-screen max-h-screen min-h-screen w-screen flex-col">
         <PlaygroundProvider>
           <PlaygroundHeader />
           <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
-            <div className="flex grow flex-col items-stretch md:flex-row">
-              <ThreadsContainer
-                thread_ids={thread_ids}
-                thread={null}
-              ></ThreadsContainer>
-            </div>
+            <ThreadsContainer
+              thread_ids={thread_ids}
+              thread={null}
+            ></ThreadsContainer>
             {/* <ConfigSidebar /> */}
           </div>
         </PlaygroundProvider>

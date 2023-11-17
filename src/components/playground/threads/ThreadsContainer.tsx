@@ -27,8 +27,9 @@ const ThreadWrapper = ({
   return (
     <>
       <div
-        className={`note-container flex flex-col ${
-          highlighted ? 'bg-accent' : 'bg-background'
+        className={`note-container px-4 flex flex-col ${
+          // TODO: add accent and extract bg color to theme
+          highlighted ? 'bg-white' : 'bg-white'
         } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}]`}
         style={{
           left: 40 * i,
@@ -41,7 +42,7 @@ const ThreadWrapper = ({
             obstructed ? 'opacity-100' : 'opacity-0'
           } md:block`}
         >
-          <div className="transform-origin-left absolute z-10 rotate-90 transform pb-2">
+          <div className="absolute z-10 origin-left rotate-90 transform pb-2">
             {/* <LinkToStacked class="decoration-none font-bold" to={id}> */}
             {title || id}
             {/* </LinkToStacked> */}
@@ -87,47 +88,47 @@ function ThreadsContainer({
     pages = [state.stackedPages[indexToShow]]
   }
 
+  {
+    /* <Helmet>
+    <meta charSet="utf-8" />
+  </Helmet>
+  <Header siteMetadata={siteMetadata} /> */
+  }
   return (
-    <div className="flex h-screen min-h-screen flex-grow flex-col">
-      {/* <Helmet>
-        <meta charSet="utf-8" />
-      </Helmet>
-      <Header siteMetadata={siteMetadata} /> */}
-
+    <div
+      ref={scrollContainer}
+      className="flex min-w-0 flex-1 flex-grow overflow-x-auto overflow-y-hidden"
+    >
       <div
-        ref={scrollContainer}
-        className="flex-1 flex-grow overflow-x-auto overflow-y-hidden"
+        className={`note-columns-container min-w-unset w-full flex-grow transition duration-100 md:w-full`}
+        style={{
+          width: NOTE_WIDTH * pages.length + 1,
+        }}
       >
-        <div
-          className={`note-columns-container min-w-unset w-full flex-grow transition duration-100 md:w-full lg:w-[${
-            NOTE_WIDTH * pages.length + 1
-          }]`}
-        >
-          {/* Render the stacked pages */}
-          {pages.map((page, i) => (
-            <StackedPageWrapper
-              i={i}
-              key={page.id}
-              id={page.id}
-              // title={page.data?.title}
-              overlay={
-                stackedPageStates[page.id] && stackedPageStates[page.id].overlay
-              }
-              obstructed={
-                indexToShow !== undefined
-                  ? false
-                  : stackedPageStates[page.id] &&
-                    stackedPageStates[page.id].obstructed
-              }
-              highlighted={
-                stackedPageStates[page.id] &&
-                stackedPageStates[page.id].highlighted
-              }
-            >
-              <Thread thread_id={page.id} />
-            </StackedPageWrapper>
-          ))}
-        </div>
+        {/* Render the stacked pages */}
+        {pages.map((page, i) => (
+          <StackedPageWrapper
+            i={i}
+            key={page.id}
+            id={page.id}
+            title={page.id}
+            overlay={
+              stackedPageStates[page.id] && stackedPageStates[page.id].overlay
+            }
+            obstructed={
+              indexToShow !== undefined
+                ? false
+                : stackedPageStates[page.id] &&
+                  stackedPageStates[page.id].obstructed
+            }
+            highlighted={
+              stackedPageStates[page.id] &&
+              stackedPageStates[page.id].highlighted
+            }
+          >
+            <Thread thread_id={page.id} />
+          </StackedPageWrapper>
+        ))}
       </div>
     </div>
   )

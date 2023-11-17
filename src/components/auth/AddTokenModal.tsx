@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthProvider'
+import { Button } from '@chakra-ui/react'
 import React from 'react'
 import { MdClose, MdToken } from 'react-icons/md'
 
@@ -28,14 +29,16 @@ export default function AddTokenModal({ className }: Props) {
 
   return (
     <>
-      <button
-        className={`hidden rounded bg-green-500 p-4 text-white hover:bg-green-600 md:block ${className}`}
+      <Button
+        size="sm"
+        colorScheme="green"
+        className={`hidden rounded md:block ${className}`}
         onClick={() => setOpen(true)}
       >
-        Add your API token
-      </button>
+        Set API key
+      </Button>
       <button
-        className={`flex items-center gap-x-1 rounded bg-green-500 p-4 text-white hover:bg-green-600 md:hidden ${className}`}
+        className={`flex items-center gap-x-1 rounded md:hidden ${className}`}
         onClick={() => setOpen(true)}
       >
         <MdToken /> Api Key
@@ -67,7 +70,7 @@ export default function AddTokenModal({ className }: Props) {
               . All requests are made on the client side, so your token is never
               sent to the server. If you would like more information look at the{' '}
               <a
-                href="https://github.com/Nashex/gpt4-playground"
+                href="https://github.com/trungtin/agents-playground"
                 target="_blank"
                 rel="noreferrer"
                 className="text-primary hover:underline"
@@ -96,7 +99,7 @@ export default function AddTokenModal({ className }: Props) {
                   type="submit"
                   className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
                 >
-                  Add
+                  Set
                 </button>
               </div>
             </form>
