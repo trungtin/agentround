@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { useAuth } from './AuthProvider'
 
-export function useApi<T>(url: string) {
+export function useApi<T>(url: string | null) {
   const { token } = useAuth()
 
   const fetcher = (url) =>
@@ -13,7 +13,7 @@ export function useApi<T>(url: string) {
     }).then((res) => res.json())
 
   // Add /api prefix if not present
-  if (!url.startsWith('/api')) {
+  if (url && !url.startsWith('/api')) {
     url = `/api${url.startsWith('/') ? '' : '/'}${url}`
   }
 

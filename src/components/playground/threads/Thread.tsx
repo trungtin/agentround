@@ -16,7 +16,7 @@ function Thread({ thread_id }: { thread_id: string }) {
 
   return (
     <div className="min-w-[300px]">
-      <ThreadMessages messages={messages}></ThreadMessages>
+      <ThreadMessages messages={messages?.data}></ThreadMessages>
       <ThreadInput />
     </div>
   )
