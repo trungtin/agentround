@@ -168,6 +168,14 @@ function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
     },
     [setInput]
   )
+  const onKeyPress = useCallback(
+    (e) => {
+      if (e.key === 'Enter' && e.metaKey) {
+        addAndRun()
+      }
+    },
+    [addAndRun]
+  )
   return (
     <div className="border-gray-3 -mx-2 space-y-2 rounded-lg border p-4 shadow-xl">
       <Textarea
@@ -182,6 +190,7 @@ function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
         border="none"
         value={input}
         onChange={onInputChange}
+        onKeyDown={onKeyPress}
       ></Textarea>
       <ButtonGroup size="sm" className="flex space-x-2">
         <Button
