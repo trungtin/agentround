@@ -14,7 +14,7 @@ function CreateThread(props: {}) {
   )
   const router = useRouter()
   const searchParams = new URLSearchParams(useSearchParams())
-  const { trigger: addThread } = useMutation<
+  const { trigger: addThread, isMutating: creating } = useMutation<
     Threads.ThreadCreateParams | undefined,
     Threads.Thread
   >('/threads')
@@ -23,13 +23,16 @@ function CreateThread(props: {}) {
     if (!selectedAssistant) {
       return
     }
-    return addThread().then((thread) => {
+    return addThread({
+      metadata: { preferred_assistant_id: selectedAssistant.id },
+    }).then((thread) => {
       const stacked =
         searchParams.getAll('stacked')?.join(',').split(',').filter(Boolean) ||
         []
       stacked.push(thread.id)
       searchParams.set('stacked', stacked.join(','))
       router.replace(`?${searchParams}`)
+      setShowSelect(false)
     })
   }, [selectedAssistant])
   return (
@@ -63,6 +66,7 @@ function CreateThread(props: {}) {
             aria-label="Create new thread"
             onClick={createThread}
             isDisabled={!selectedAssistant}
+            isLoading={creating}
           ></IconButton>
         </ButtonGroup>
       ) : (
