@@ -12,14 +12,10 @@ import { useStackedPagesProvider } from '@/components/stacked/hooks'
 import { ThreadProvider } from '@/context/ThreadContext'
 import { useSearchParams } from 'next/navigation'
 import Thread from './Thread'
+import { useAuth } from '@/context/AuthProvider'
 
 const NOTE_WIDTH = 576 // w-xl
 
-const StackedPageWrapper = ({ i, ...rest }) => (
-  <PageIndexProvider value={i}>
-    <ThreadWrapper {...rest} i={i} />
-  </PageIndexProvider>
-)
 const ThreadWrapper = ({
   children,
   id,
@@ -65,6 +61,16 @@ const ThreadWrapper = ({
   )
 }
 
+function MissingTokenContainer() {
+  return (
+    <div className="flex flex-grow flex-col items-center justify-center">
+      <div className="mb-2 text-xl font-semibold">No API token</div>
+      <div className="text-md font-medium text-gray-500">
+        Add your API token using the top right button.
+      </div>
+    </div>
+  )
+}
 function EmptyThreadsContainer() {
   return (
     <div className="flex flex-grow flex-col items-center justify-center">
@@ -79,6 +85,7 @@ function EmptyThreadsContainer() {
 type Props = {}
 
 function ThreadsContainer(props: Props) {
+  const { token } = useAuth()
   const [width] = useWindowWidth()
 
   const stacked = useSearchParams().getAll('stacked').join(',')
@@ -114,6 +121,11 @@ function ThreadsContainer(props: Props) {
   </Helmet>
   <Header siteMetadata={siteMetadata} /> */
   }
+
+  if (!token) {
+    return <MissingTokenContainer />
+  }
+
   return (
     <div
       ref={scrollContainer}
@@ -138,23 +150,24 @@ function ThreadsContainer(props: Props) {
           const highlighted =
             stackedPageStates[page.id] && stackedPageStates[page.id].highlighted
           return (
-            <StackedPageWrapper
-              i={i}
-              key={page.id}
-              id={page.id}
-              title={page.id}
-              overlay={overlay}
-              obstructed={obstructed}
-              highlighted={highlighted}
-            >
-              <StackedPageStateProvider
-                value={{ active: false, obstructed, overlay, highlighted }}
+            <PageIndexProvider value={i} key={page.id}>
+              <ThreadWrapper
+                i={i}
+                id={page.id}
+                title={page.id}
+                overlay={overlay}
+                obstructed={obstructed}
+                highlighted={highlighted}
               >
-                <ThreadProvider>
-                  <Thread thread_id={page.id} />
-                </ThreadProvider>
-              </StackedPageStateProvider>
-            </StackedPageWrapper>
+                <StackedPageStateProvider
+                  value={{ active: false, obstructed, overlay, highlighted }}
+                >
+                  <ThreadProvider>
+                    <Thread thread_id={page.id} />
+                  </ThreadProvider>
+                </StackedPageStateProvider>
+              </ThreadWrapper>
+            </PageIndexProvider>
           )
         })}
       </div>

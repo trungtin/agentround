@@ -6,9 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import { FiX, FiPlus } from 'react-icons/fi'
 import SelectAssistant from './SelectAssistant'
+import { useAuth } from '@/context/AuthProvider'
 
 function CreateThread(props: {}) {
   const assistantCtx = useAssistant()
+  const { token } = useAuth()
   const [showSelect, setShowSelect] = useState(false)
 
   const [selectedAssistant, setSelectedAssistant] =
@@ -30,6 +32,9 @@ function CreateThread(props: {}) {
       setShowSelect(false)
     })
   }, [selectedAssistant, addThread, assistantCtx.urls])
+  if (!token) {
+    return null
+  }
   return (
     <div>
       {showSelect ? (
