@@ -1,6 +1,15 @@
 import { Mutator, useMutation } from '@/context/swr'
 import { CursorPageResponse, Files, Threads } from '@/types'
-import { Button, ButtonGroup, IconButton, Input } from '@chakra-ui/react'
+import {
+  Button,
+  ButtonGroup,
+  HStack,
+  IconButton,
+  Input,
+  Tag,
+  TagCloseButton,
+  TagLabel,
+} from '@chakra-ui/react'
 import { useCallback, useState } from 'react'
 
 import { FiPaperclip, FiPlayCircle } from 'react-icons/fi'
@@ -127,6 +136,28 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
           />
         </label>
       </ButtonGroup>
+      {files.length > 0 && (
+        <div className="pt-2">
+          <HStack spacing={2} className="flex-wrap">
+            {files.map((file, id) => (
+              <Tag
+                size="sm"
+                key={file.name + id}
+                borderRadius="full"
+                variant="outline"
+                colorScheme="green"
+              >
+                <TagLabel>{file.name}</TagLabel>
+                <TagCloseButton
+                  onClick={() =>
+                    setFiles((files) => files.filter((f) => f !== file))
+                  }
+                />
+              </Tag>
+            ))}
+          </HStack>
+        </div>
+      )}
     </div>
   )
 }

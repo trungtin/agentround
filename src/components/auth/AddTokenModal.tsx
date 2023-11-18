@@ -87,20 +87,13 @@ export default function AddTokenModal({ className }: Props) {
                 onChange={handleInput}
                 value={input}
               />
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  className="mr-2 rounded px-4 py-2 text-primary hover:bg-primary/50"
-                  onClick={handleClear}
-                >
+              <div className="mt-4 flex justify-end space-x-3">
+                <Button type="button" size="sm" onClick={handleClear}>
                   Clear Token
-                </button>
-                <button
-                  type="submit"
-                  className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-                >
-                  Set
-                </button>
+                </Button>
+                <Button size="sm" type="submit" colorScheme="green">
+                  Set API key
+                </Button>
               </div>
             </form>
           </div>

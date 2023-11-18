@@ -19,7 +19,7 @@ export default function Playground() {
       <main className="max-w-screen relative flex max-h-screen w-screen flex-col">
         <PlaygroundProvider>
           <PlaygroundHeader />
-          <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
+          <div className="flex h-[calc(100vh-52px)] max-h-[calc(100vh-52px)] grow flex-row">
             <div className="flex grow flex-col items-stretch md:flex-row">
               <PlaygroundConversations />
               <div className="flex grow">
