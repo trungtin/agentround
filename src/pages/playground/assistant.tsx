@@ -1,13 +1,11 @@
-import ConfigSidebar from '@/components/playground/ConfigSidebar'
 import PlaygroundHeader from '@/components/playground/PlaygroundHeader'
 
 import { AssistantProvider } from '@/context/AssistantContext'
 import Head from 'next/head'
-import { useSearchParams } from 'next/navigation'
-import React, { useMemo } from 'react'
+import React from 'react'
 
-import dynamic from 'next/dynamic'
 import CreateThread from '@/components/playground/threads/CreateThread'
+import dynamic from 'next/dynamic'
 
 const ThreadsContainer = dynamic(
   () => import('@/components/playground/threads/ThreadsContainer'),
@@ -33,7 +31,6 @@ export default function Playground() {
           />
           <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
             <ThreadsContainer></ThreadsContainer>
-            {/* <ConfigSidebar /> */}
           </div>
         </AssistantProvider>
       </main>
