@@ -1,11 +1,12 @@
 import { useApi } from '@/context/swr'
-import { Assistants, Threads } from '@/types'
+import { Assistants, Files, Threads } from '@/types'
+import { HStack, Tag, TagLabel } from '@chakra-ui/react'
 
 type Props = {
   message: Threads.ThreadMessage
 }
 
-function MessageRole({ message }: { message: Props['message'] }) {
+function MessageAuthor({ message }: { message: Props['message'] }) {
   const { data } = useApi<Assistants.Assistant>(
     message.assistant_id && `/assistants/${message.assistant_id}`
   )
@@ -20,7 +21,6 @@ function MessageContent({ message }: { message: Props['message'] }) {
   return (
     <div className="">
       {message.content?.map((content, idx) => {
-        content
         if (content.type == 'text') {
           // TODO: implement annotation
           return <div key={idx}>{content.text.value}</div>
@@ -36,18 +36,42 @@ function MessageContent({ message }: { message: Props['message'] }) {
   )
 }
 
+function MessageFile({ file_id }: { file_id: string }) {
+  const { data: file } = useApi<Files.FileObject>(`/files/${file_id}`)
+  if (!file) {
+    return null
+  }
+  return (
+    <Tag size="sm" borderRadius="full" variant="outline" colorScheme="green">
+      <TagLabel>{file.filename}</TagLabel>
+    </Tag>
+  )
+}
+
+function MessageFiles({ file_ids }: { file_ids: string[] }) {
+  return (
+    <HStack spacing={2} className="flex-wrap py-2">
+      {file_ids.map((file_id) => (
+        <MessageFile file_id={file_id} key={file_id}></MessageFile>
+      ))}
+    </HStack>
+  )
+}
+
 export default function ThreadMessage({ message }: Props) {
   return (
     <div className="mb-3 py-3">
       <div>
-        {/* author */}
-        <span>{<MessageRole message={message} />}</span>
+        <span>{<MessageAuthor message={message} />}</span>
       </div>
       <div>
-        {/* content */}
         <span>{<MessageContent message={message} />}</span>
       </div>
-      {/* TODO: render message.file_ids */}
+      <div>
+        {message.file_ids?.length > 0 && (
+          <MessageFiles file_ids={message.file_ids}></MessageFiles>
+        )}
+      </div>
     </div>
   )
 }

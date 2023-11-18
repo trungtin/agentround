@@ -145,7 +145,6 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
                 key={file.name + id}
                 borderRadius="full"
                 variant="outline"
-                colorScheme="green"
               >
                 <TagLabel>{file.name}</TagLabel>
                 <TagCloseButton
