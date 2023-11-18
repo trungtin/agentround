@@ -12,3 +12,4 @@ export interface CursorPageResponse<Item> {
 export import Threads = OpenAI.Beta.Threads
 export import Assistants = OpenAI.Beta.Assistants
 export import Files = OpenAI.Files
+export import Runs = OpenAI.Beta.Threads.Runs

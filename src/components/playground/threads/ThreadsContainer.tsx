@@ -9,6 +9,7 @@ import {
   StackedPageStateProvider,
 } from '@/components/stacked/contexts'
 import { useStackedPagesProvider } from '@/components/stacked/hooks'
+import { ThreadProvider } from '@/context/ThreadContext'
 import { useSearchParams } from 'next/navigation'
 import Thread from './Thread'
 
@@ -149,7 +150,9 @@ function ThreadsContainer(props: Props) {
               <StackedPageStateProvider
                 value={{ active: false, obstructed, overlay, highlighted }}
               >
-                <Thread thread_id={page.id} />
+                <ThreadProvider>
+                  <Thread thread_id={page.id} />
+                </ThreadProvider>
               </StackedPageStateProvider>
             </StackedPageWrapper>
           )

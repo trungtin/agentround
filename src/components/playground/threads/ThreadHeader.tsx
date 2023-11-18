@@ -2,6 +2,7 @@ import { useAssistant } from '@/context/AssistantContext'
 import { useMutation } from '@/context/swr'
 import { Assistants, Threads } from '@/types'
 import {
+  Button,
   IconButton,
   Menu,
   MenuButton,
@@ -9,8 +10,14 @@ import {
   MenuItem,
   MenuList,
 } from '@chakra-ui/react'
-import { useCallback, useState } from 'react'
-import { FiMoreVertical, FiTrash2, FiFilePlus, FiX } from 'react-icons/fi'
+import { useCallback } from 'react'
+import {
+  FiFilePlus,
+  FiMoreVertical,
+  FiPlayCircle,
+  FiTrash2,
+  FiX,
+} from 'react-icons/fi'
 
 function ThreadTitle(props: { assistant: Assistants.Assistant | undefined }) {
   return (
@@ -19,6 +26,33 @@ function ThreadTitle(props: { assistant: Assistants.Assistant | undefined }) {
         {props.assistant?.name || 'Thread'}
       </span>
     </div>
+  )
+}
+
+function ThreadActionsRun({
+  thread,
+  assistant,
+}: {
+  thread: Threads.Thread | undefined
+  assistant: Assistants.Assistant | undefined
+}) {
+  const { trigger: runThread, isMutating: running } = useMutation<
+    Threads.Runs.RunCreateParams | undefined,
+    Threads.Runs.Run
+  >(thread ? `/threads/${thread.id}/runs` : null)
+
+  const run = useCallback(() => {
+    if (!thread || !assistant) return
+    runThread({
+      assistant_id: assistant.id,
+    })
+  }, [thread, runThread, assistant])
+
+  return (
+    <Button size="sm" onClick={run} isLoading={running}>
+      <FiPlayCircle />
+      <span className="ml-2">Run</span>
+    </Button>
   )
 }
 
@@ -59,7 +93,8 @@ function ThreadActions(props: {
     deleteThreadApi().then(closeThread)
   }, [deleteThreadApi, closeThread, props.thread])
   return (
-    <div>
+    <div className="flex space-x-4">
+      <ThreadActionsRun thread={props.thread} assistant={props.assistant} />
       <Menu isLazy colorScheme="red">
         <MenuButton
           size={'sm'}
@@ -90,7 +125,7 @@ function ThreadHeader(props: {
   thread: Threads.Thread | undefined
 }) {
   return (
-    <div>
+    <div className="sticky top-0 border-b border-gray-100 bg-white pb-2 pt-4">
       <div className="flex flex-row justify-between">
         <ThreadTitle assistant={props.assistant}></ThreadTitle>
         <ThreadActions

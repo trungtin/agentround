@@ -1,36 +1,99 @@
 import { Mutator, useMutation } from '@/context/swr'
-import { CursorPageResponse, Files, Threads } from '@/types'
+import { Assistants, CursorPageResponse, Files, Threads } from '@/types'
 import {
   Button,
   ButtonGroup,
+  FocusLock,
   HStack,
   IconButton,
-  Input,
+  Popover,
+  PopoverContent,
   Tag,
   TagCloseButton,
   TagLabel,
+  Textarea,
 } from '@chakra-ui/react'
 import { useCallback, useState } from 'react'
 
-import { FiPaperclip, FiPlayCircle } from 'react-icons/fi'
+import { useUpdateThread } from '@/context/api'
+import { FiCheck, FiPaperclip, FiPlayCircle } from 'react-icons/fi'
+import SelectAssistant from './SelectAssistant'
+
+import ResizeTextarea from 'react-textarea-autosize'
+
+function UpdateAssistantPopover({
+  open,
+  onUpdated,
+  thread,
+}: {
+  open: boolean
+  onUpdated: () => void
+  thread: Threads.Thread | undefined
+}) {
+  const [selectedAssistant, setSelectedAssistant] =
+    useState<Assistants.Assistant | null>(null)
+
+  const { trigger: updateThreadApi, isMutating: updating } = useUpdateThread(
+    thread?.id
+  )
+  return (
+    <Popover isOpen={open} placement="top-start" closeOnBlur={false}>
+      <PopoverContent p={5}>
+        <FocusLock persistentFocus={false}>
+          <div className="mb-2 text-sm font-medium text-gray-900">
+            Assign assistant to thread
+          </div>
+
+          <ButtonGroup size="sm">
+            <SelectAssistant onSelectAssistant={setSelectedAssistant} />
+            <IconButton
+              icon={<FiCheck />}
+              aria-label="Create new thread"
+              onClick={() => {
+                if (selectedAssistant) {
+                  updateThreadApi({
+                    metadata: {
+                      preferred_assistant_id: selectedAssistant.id,
+                    },
+                  }).then(() => {
+                    onUpdated()
+                  })
+                }
+              }}
+              isDisabled={!selectedAssistant}
+              isLoading={updating}
+            ></IconButton>
+          </ButtonGroup>
+        </FocusLock>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 type Props = {
   addMessage: Mutator<Threads.MessageCreateParams, Threads.ThreadMessage>
+  thread: Threads.Thread | undefined
 }
 
-function ThreadInput({ addMessage: apiAddMessage }: Props) {
+function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
   const [input, setInput] = useState('')
   const [files, setFiles] = useState<File[]>([])
-  const { trigger } = useMutation<unknown, Files.FileObject>(
+  const { trigger: addFiles } = useMutation<unknown, Files.FileObject>(
     '/files',
     undefined
   )
+  const { trigger: runThread, isMutating: running } = useMutation<
+    Threads.Runs.RunCreateParams | undefined,
+    Threads.Runs.Run
+  >(thread ? `/threads/${thread.id}/runs` : null)
+
+  const [asstSelectOpen, setAsstSelectOpen] = useState(false)
 
   const sendDisabled = !input && !files.length
 
   const addMessage = useCallback(() => {
     if (!input && !files.length) {
-      return
+      return Promise.resolve()
     }
     let createdFiles: Promise<Files.FileObject[]> = Promise.resolve([])
     if (files.length) {
@@ -39,7 +102,7 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
           const formData = new FormData()
           formData.append('file', file)
           formData.append('purpose', 'assistants')
-          return trigger(formData)
+          return addFiles(formData)
         })
       )
     }
@@ -59,11 +122,11 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
               if (!currentData) {
                 return
               }
-              currentData.data[0].content
               return {
                 ...currentData,
                 data: [
                   {
+                    id: 'optimistic',
                     role: 'user',
                     file_ids: files.map((file) => file.id),
                     content: [{ type: 'text', text: { value: input } }],
@@ -83,7 +146,21 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
         // TODO: handle error
         console.error(err)
       })
-  }, [apiAddMessage, input, files, trigger])
+  }, [apiAddMessage, input, files, addFiles])
+
+  const addAndRun = useCallback(() => {
+    if (!thread) return
+    const preferredAssistantId = (thread.metadata as any)
+      ?.preferred_assistant_id
+
+    if (!preferredAssistantId) return setAsstSelectOpen(true)
+
+    addMessage().then(() => {
+      runThread({
+        assistant_id: preferredAssistantId,
+      })
+    })
+  }, [addMessage, runThread, thread])
 
   const onInputChange = useCallback(
     (e) => {
@@ -93,13 +170,19 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
   )
   return (
     <div className="border-gray-3 -mx-2 space-y-2 rounded-lg border p-4 shadow-xl">
-      <Input
+      <Textarea
+        minRows={1}
+        as={ResizeTextarea}
+        minH="unset"
+        overflow="hidden"
+        w="100%"
+        resize="none"
         className="focus-visible:!border-none focus-visible:!shadow-none"
         placeholder="Enter your message...."
         border="none"
         value={input}
         onChange={onInputChange}
-      ></Input>
+      ></Textarea>
       <ButtonGroup size="sm" className="flex space-x-2">
         <Button
           {...(sendDisabled
@@ -109,10 +192,18 @@ function ThreadInput({ addMessage: apiAddMessage }: Props) {
               })}
           leftIcon={<FiPlayCircle />}
           isDisabled={sendDisabled}
-          onClick={addMessage}
+          isLoading={running}
+          onClick={addAndRun}
         >
           Add and run
         </Button>
+        <UpdateAssistantPopover
+          open={asstSelectOpen}
+          thread={thread}
+          onUpdated={() => {
+            setAsstSelectOpen(false)
+          }}
+        />
         <Button isDisabled={sendDisabled} onClick={addMessage}>
           Add
         </Button>

@@ -9,9 +9,17 @@ import useSWRMutation, {
 import { useCallback } from 'react'
 import { useAuth } from './AuthProvider'
 
+/**
+ * options to pass to the fetcher function
+ * @property headers headers to pass to the request
+ * @property method HTTP method
+ * @property query query params to append to the url so that we can create a static key for swr
+ *
+ */
 type FetcherOptions = {
   headers?: Record<string, string>
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  query?: Record<string, string | number | boolean>
 } | null
 
 /**
@@ -25,9 +33,16 @@ function useFetcher(fetcherOptions: FetcherOptions = null) {
   const { token } = useAuth()
 
   const fetcher = useCallback(
-    // extract arg is used to pass the body/form-data of the request
-    (url: string, { arg }: { arg?: any } = {}) =>
-      fetch(url, {
+    // extra arg is used to pass the body/form-data of the request
+    (url: string, { arg }: { arg?: any } = {}) => {
+      if (fetcherOptions?.query) {
+        const params = new URLSearchParams(
+          fetcherOptions.query as Record<string, string>
+        )
+
+        url = `${url}${url.includes('?') ? '&' : '?'}${params.toString()}`
+      }
+      return fetch(url, {
         method: fetcherOptions?.method || 'GET',
         body: arg
           ? arg instanceof FormData
@@ -38,7 +53,8 @@ function useFetcher(fetcherOptions: FetcherOptions = null) {
           Authorization: `Bearer ${token}`,
           ...fetcherOptions?.headers,
         },
-      }).then((res) => res.json()),
+      }).then((res) => res.json())
+    },
     [token, fetcherOptions]
   )
 
@@ -64,15 +80,14 @@ function formatApiUrl(url: string | null) {
  */
 export function useApi<Data = any>(
   url: string | null,
-  config: SWRConfiguration | undefined = undefined
+  config: SWRConfiguration | undefined = undefined,
+  fetcherOptions: FetcherOptions = null
 ) {
-  const fetcher = useFetcher()
+  const fetcher = useFetcher(fetcherOptions)
+
   if (!config) config = {}
   if (!('revalidateOnFocus' in config)) {
     config.revalidateOnFocus = false
-  }
-  if (!('revalidateIfStale' in config)) {
-    config.revalidateIfStale = false
   }
   return useSWR<Data>(formatApiUrl(url), fetcher, config)
 }
@@ -107,6 +122,6 @@ export function useMutation<Body = any, Data = Body>(
 }
 
 // trigger type of useMutation
-export type Mutator<Body = any, Data = Body> =
-  | TriggerWithArgs<Data, unknown, any, Body>
-  | TriggerWithoutArgs<Data, unknown, any, Body>
+export type Mutator<Body = any, Data = Body> = [Body] extends [never]
+  ? TriggerWithoutArgs<Data, unknown, any, Body>
+  : TriggerWithArgs<Data, unknown, any, Body>

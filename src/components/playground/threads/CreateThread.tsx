@@ -5,17 +5,15 @@ import { Button, ButtonGroup, IconButton, Select } from '@chakra-ui/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import { FiX, FiPlus } from 'react-icons/fi'
+import SelectAssistant from './SelectAssistant'
 
 function CreateThread(props: {}) {
   const assistantCtx = useAssistant()
   const [showSelect, setShowSelect] = useState(false)
+
   const [selectedAssistant, setSelectedAssistant] =
     useState<Assistants.Assistant | null>(null)
-  const { data: assistants } = useApi<CursorPageResponse<Assistants.Assistant>>(
-    showSelect ? '/assistants' : null
-  )
-  const router = useRouter()
-  const searchParams = new URLSearchParams(useSearchParams())
+
   const { trigger: addThread, isMutating: creating } = useMutation<
     Threads.ThreadCreateParams | undefined,
     Threads.Thread
@@ -31,7 +29,7 @@ function CreateThread(props: {}) {
       assistantCtx.urls.appendThread(thread)
       setShowSelect(false)
     })
-  }, [selectedAssistant])
+  }, [selectedAssistant, addThread, assistantCtx.urls])
   return (
     <div>
       {showSelect ? (
@@ -41,23 +39,8 @@ function CreateThread(props: {}) {
             aria-label="Close assistant selector"
             onClick={() => setShowSelect(false)}
           ></IconButton>
-          <Select
-            placeholder="Select an assistant"
-            size="sm"
-            className="min-w-8"
-            onChange={(e) => {
-              const assistant = assistants?.data.find(
-                (assistant) => assistant.id === e.target.value
-              )
-              setSelectedAssistant(assistant || null)
-            }}
-          >
-            {assistants?.data.map((assistant) => (
-              <option key={assistant.id} value={assistant.id}>
-                {assistant.name}
-              </option>
-            ))}
-          </Select>
+          <SelectAssistant onSelectAssistant={setSelectedAssistant} />
+
           <IconButton
             icon={<FiPlus />}
             aria-label="Create new thread"
