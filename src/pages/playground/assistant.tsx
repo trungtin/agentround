@@ -1,7 +1,7 @@
 import ConfigSidebar from '@/components/playground/ConfigSidebar'
 import PlaygroundHeader from '@/components/playground/PlaygroundHeader'
 
-import PlaygroundProvider from '@/context/PlaygroundProvider'
+import { AssistantProvider } from '@/context/AssistantContext'
 import Head from 'next/head'
 import { useSearchParams } from 'next/navigation'
 import React, { useMemo } from 'react'
@@ -23,7 +23,7 @@ export default function Playground() {
         <title>OpenAI Playground Assistant</title>
       </Head>
       <main className="max-w-screen relative flex h-screen max-h-screen min-h-screen w-screen flex-col">
-        <PlaygroundProvider>
+        <AssistantProvider>
           <PlaygroundHeader
             rightActions={
               <>
@@ -35,7 +35,7 @@ export default function Playground() {
             <ThreadsContainer></ThreadsContainer>
             {/* <ConfigSidebar /> */}
           </div>
-        </PlaygroundProvider>
+        </AssistantProvider>
       </main>
     </React.Fragment>
   )

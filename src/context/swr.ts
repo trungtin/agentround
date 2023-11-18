@@ -11,6 +11,7 @@ import { useAuth } from './AuthProvider'
 
 type FetcherOptions = {
   headers?: Record<string, string>
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 } | null
 
 /**
@@ -20,17 +21,14 @@ type FetcherOptions = {
  * @param fetcherOptions options to pass to fetch
  * @returns
  */
-function useFetcher(
-  method: 'GET' | 'POST' = 'GET',
-  fetcherOptions: FetcherOptions = null
-) {
+function useFetcher(fetcherOptions: FetcherOptions = null) {
   const { token } = useAuth()
 
   const fetcher = useCallback(
     // extract arg is used to pass the body/form-data of the request
-    (url, { arg }: { arg?: any } = {}) =>
+    (url: string, { arg }: { arg?: any } = {}) =>
       fetch(url, {
-        method,
+        method: fetcherOptions?.method || 'GET',
         body: arg
           ? arg instanceof FormData
             ? arg
@@ -41,7 +39,7 @@ function useFetcher(
           ...fetcherOptions?.headers,
         },
       }).then((res) => res.json()),
-    [token, method, fetcherOptions]
+    [token, fetcherOptions]
   )
 
   return fetcher
@@ -97,7 +95,10 @@ export function useMutation<Body = any, Data = Body>(
     | undefined = undefined,
   fetcherOptions: FetcherOptions = null
 ) {
-  const fetcher = useFetcher('POST', fetcherOptions)
+  if (!fetcherOptions) fetcherOptions = {}
+  if (!fetcherOptions.method) fetcherOptions.method = 'POST'
+
+  const fetcher = useFetcher(fetcherOptions)
   return useSWRMutation<Data, unknown, any, Body>(
     formatApiUrl(url) as any,
     fetcher as MutationFetcher<Data, any, Body>,

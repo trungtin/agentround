@@ -1,11 +1,13 @@
+import { useAssistant } from '@/context/AssistantContext'
 import { useApi, useMutation } from '@/context/swr'
 import { Assistants, CursorPageResponse, Threads } from '@/types'
 import { Button, ButtonGroup, IconButton, Select } from '@chakra-ui/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useState } from 'react'
-import { FiXCircle, FiX, FiPlus } from 'react-icons/fi'
+import { FiX, FiPlus } from 'react-icons/fi'
 
 function CreateThread(props: {}) {
+  const assistantCtx = useAssistant()
   const [showSelect, setShowSelect] = useState(false)
   const [selectedAssistant, setSelectedAssistant] =
     useState<Assistants.Assistant | null>(null)
@@ -26,12 +28,7 @@ function CreateThread(props: {}) {
     return addThread({
       metadata: { preferred_assistant_id: selectedAssistant.id },
     }).then((thread) => {
-      const stacked =
-        searchParams.getAll('stacked')?.join(',').split(',').filter(Boolean) ||
-        []
-      stacked.push(thread.id)
-      searchParams.set('stacked', stacked.join(','))
-      router.replace(`?${searchParams}`)
+      assistantCtx.urls.appendThread(thread)
       setShowSelect(false)
     })
   }, [selectedAssistant])

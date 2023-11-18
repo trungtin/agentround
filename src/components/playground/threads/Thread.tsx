@@ -7,7 +7,6 @@ import ThreadMessages from './ThreadMessages'
 
 function Thread({ thread_id }: { thread_id: string }) {
   const { data: thread } = useApi<Threads.Thread>(`/api/threads/${thread_id}`)
-  thread?.id
   // @ts-ignore
   const preferredAssistantId = thread?.metadata?.preferred_assistant_id
   const { data: preferredAssistant } = useApi<Assistants.Assistant>(
@@ -25,7 +24,10 @@ function Thread({ thread_id }: { thread_id: string }) {
   return (
     <div className="flex w-[540px] grow flex-col py-4">
       <div>
-        <ThreadHeader assistant={preferredAssistant}></ThreadHeader>
+        <ThreadHeader
+          assistant={preferredAssistant}
+          thread={thread}
+        ></ThreadHeader>
       </div>
       <div className="flex grow flex-col justify-between">
         <div className="pb-4">
