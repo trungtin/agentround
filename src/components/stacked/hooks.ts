@@ -114,7 +114,7 @@ export function useStackedPagesProvider({
               Math.max(
                 pageWidth * (i - 1) - (obstructedPageWidth * i - 2),
                 0
-              ) || scroll < Math.max(0, pageWidth * (i - 2)),
+              ) || scroll < Math.max(0, pageWidth * (i - 3)),
           obstructed:
             scroll >
               Math.max(

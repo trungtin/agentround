@@ -4,7 +4,10 @@ import { useMemo } from 'react'
 // import { Helmet } from 'react-helmet'
 
 import useWindowWidth from '@/components/hooks/useWindowWidth'
-import { PageIndexProvider } from '@/components/stacked/contexts'
+import {
+  PageIndexProvider,
+  StackedPageStateProvider,
+} from '@/components/stacked/contexts'
 import { useStackedPagesProvider } from '@/components/stacked/hooks'
 import { useSearchParams } from 'next/navigation'
 import Thread from './Thread'
@@ -31,7 +34,7 @@ const ThreadWrapper = ({
         className={`note-container flex flex-col px-4 ${
           // TODO: add accent and extract bg color to theme
           highlighted ? 'bg-white' : 'bg-white'
-        } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}]`}
+        } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}] border-gray-100`}
         style={{
           left: 40 * i,
           right: -585,
@@ -58,6 +61,17 @@ const ThreadWrapper = ({
         </div>
       </div>
     </>
+  )
+}
+
+function EmptyThreadsContainer() {
+  return (
+    <div className="flex flex-grow flex-col items-center justify-center">
+      <div className="mb-2 text-xl font-semibold">No open threads</div>
+      <div className="text-md font-medium text-gray-500">
+        Try creating one using the top right button.
+      </div>
+    </div>
   )
 }
 
@@ -105,35 +119,41 @@ function ThreadsContainer(props: Props) {
       className="flex min-w-0 flex-1 flex-grow overflow-x-auto overflow-y-hidden"
     >
       <div
-        className={`note-columns-container min-w-unset w-full flex-grow transition duration-100 md:w-full`}
+        className={`note-columns-container min-w-unset w-full flex-grow divide-x transition duration-100 md:w-full`}
         style={{
           width: NOTE_WIDTH * pages.length + 1,
         }}
       >
         {/* Render the stacked pages */}
-        {pages.map((page, i) => (
-          <StackedPageWrapper
-            i={i}
-            key={page.id}
-            id={page.id}
-            title={page.id}
-            overlay={
-              stackedPageStates[page.id] && stackedPageStates[page.id].overlay
-            }
-            obstructed={
-              indexToShow !== undefined
-                ? false
-                : stackedPageStates[page.id] &&
-                  stackedPageStates[page.id].obstructed
-            }
-            highlighted={
-              stackedPageStates[page.id] &&
-              stackedPageStates[page.id].highlighted
-            }
-          >
-            <Thread thread_id={page.id} />
-          </StackedPageWrapper>
-        ))}
+        {pages.length === 0 && <EmptyThreadsContainer />}
+        {pages.map((page, i) => {
+          const obstructed =
+            indexToShow !== undefined
+              ? false
+              : stackedPageStates[page.id] &&
+                stackedPageStates[page.id].obstructed
+          const overlay =
+            stackedPageStates[page.id] && stackedPageStates[page.id].overlay
+          const highlighted =
+            stackedPageStates[page.id] && stackedPageStates[page.id].highlighted
+          return (
+            <StackedPageWrapper
+              i={i}
+              key={page.id}
+              id={page.id}
+              title={page.id}
+              overlay={overlay}
+              obstructed={obstructed}
+              highlighted={highlighted}
+            >
+              <StackedPageStateProvider
+                value={{ active: false, obstructed, overlay, highlighted }}
+              >
+                <Thread thread_id={page.id} />
+              </StackedPageStateProvider>
+            </StackedPageWrapper>
+          )
+        })}
       </div>
     </div>
   )

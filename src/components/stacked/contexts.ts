@@ -1,14 +1,16 @@
 // copy from https://github.com/mathieudutour/gatsby-digital-garden
 
-import { createContext } from 'react'
+import { createContext, useContext } from 'react'
+
+type StackedPageState = {
+  obstructed: boolean
+  overlay: boolean
+  highlighted: boolean
+  active: boolean
+}
 
 export type ScrollState = {
-  [id: string]: {
-    obstructed: boolean
-    overlay: boolean
-    highlighted: boolean
-    active: boolean
-  }
+  [id: string]: StackedPageState
 }
 
 export const StackedPagesContext = createContext<{
@@ -27,3 +29,13 @@ export const StackedPagesIndexContext = createContext<number>(0)
 
 export const StackedPagesProvider = StackedPagesContext.Provider
 export const PageIndexProvider = StackedPagesIndexContext.Provider
+
+export const StackedPageStateContext = createContext<StackedPageState>({
+  obstructed: false,
+  overlay: false,
+  highlighted: false,
+  active: false,
+})
+
+export const StackedPageStateProvider = StackedPageStateContext.Provider
+export const useStackedPageState = () => useContext(StackedPageStateContext)
