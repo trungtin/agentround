@@ -6,9 +6,9 @@ import { MdChatBubbleOutline } from 'react-icons/md'
 import AddTokenModal from './../auth/AddTokenModal'
 import { Button, IconButton } from '@chakra-ui/react'
 
-type Props = {}
+type Props = { rightActions?: React.ReactNode }
 
-export default function Header({}: Props) {
+export default function Header({ rightActions }: Props) {
   const { conversationId } = useOpenAI()
 
   return (
@@ -25,6 +25,7 @@ export default function Header({}: Props) {
           <MdChatBubbleOutline />
         </Button> */}
         <AddTokenModal className="py-2" />
+        {rightActions}
       </div>
     </div>
   )

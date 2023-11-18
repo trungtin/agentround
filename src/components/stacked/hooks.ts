@@ -52,20 +52,19 @@ function useScroll() {
 }
 
 export function useStackedPagesProvider({
-  pages,
+  stackedPages,
   pageWidth = 625,
   obstructedPageWidth = 40,
 }: {
-  pages: { id: string }[]
+  stackedPages: { id: string }[]
   pageWidth?: number
   obstructedPageWidth?: number
 }) {
   const [scroll, containerWidth, setRef, containerRef] = useScroll()
-  const [stackedPages, setStackedPages] = useState<{ id: string }[]>(pages)
 
   const [stackedPageStates, setStackedPageStates] = useState<ScrollState>(
     Object.fromEntries(
-      pages.map((x) => [
+      stackedPages.map((x) => [
         x.id,
         {
           obstructed: false,
@@ -85,7 +84,7 @@ export function useStackedPagesProvider({
         behavior: 'smooth',
       })
     }
-  }, [stackedPages, containerRef])
+  }, [stackedPages, containerRef, pageWidth])
 
   // on scroll or on new page
   useEffect(() => {
@@ -129,7 +128,15 @@ export function useStackedPagesProvider({
         return prev
       }, acc)
     )
-  }, [stackedPages, containerRef, containerWidth, scroll, setStackedPageStates])
+  }, [
+    stackedPages,
+    containerRef,
+    containerWidth,
+    scroll,
+    setStackedPageStates,
+    pageWidth,
+    obstructedPageWidth,
+  ])
 
   const navigateToStackedPage = useCallback(
     (to: string, index: number = 0) => {

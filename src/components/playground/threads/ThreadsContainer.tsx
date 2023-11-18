@@ -1,11 +1,12 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 // import { Helmet } from 'react-helmet'
 
 import useWindowWidth from '@/components/hooks/useWindowWidth'
-import { useStackedPagesProvider } from '@/components/stacked/hooks'
 import { PageIndexProvider } from '@/components/stacked/contexts'
+import { useStackedPagesProvider } from '@/components/stacked/hooks'
+import { useSearchParams } from 'next/navigation'
 import Thread from './Thread'
 
 const NOTE_WIDTH = 576 // w-xl
@@ -27,7 +28,7 @@ const ThreadWrapper = ({
   return (
     <>
       <div
-        className={`note-container px-4 flex flex-col ${
+        className={`note-container flex flex-col px-4 ${
           // TODO: add accent and extract bg color to theme
           highlighted ? 'bg-white' : 'bg-white'
         } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}]`}
@@ -60,17 +61,21 @@ const ThreadWrapper = ({
   )
 }
 
-function ThreadsContainer({
-  thread_ids,
-  thread,
-}: {
-  thread_ids: string[]
-  thread: any
-}) {
+type Props = {}
+
+function ThreadsContainer(props: Props) {
   const [width] = useWindowWidth()
 
+  const stacked = useSearchParams().getAll('stacked').join(',')
+  // support both ?stacked=1,2,3 and ?stacked=1&stacked=2&stacked=3
+  const threads = useMemo(() => {
+    const ids = stacked.split(',').filter(Boolean)
+
+    return ids.map((id) => ({ id }))
+  }, [stacked])
+
   const [state, scrollContainer] = useStackedPagesProvider({
-    pages: thread_ids.map((id) => ({ id })),
+    stackedPages: threads,
     pageWidth: NOTE_WIDTH,
   })
   const { stackedPages, stackedPageStates } = state

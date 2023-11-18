@@ -3,6 +3,7 @@ import useSWRMutation, {
   MutationFetcher,
   SWRMutationConfiguration,
   TriggerWithArgs,
+  TriggerWithoutArgs,
 } from 'swr/mutation'
 
 import { useCallback } from 'react'
@@ -105,9 +106,6 @@ export function useMutation<Body = any, Data = Body>(
 }
 
 // trigger type of useMutation
-export type Mutator<Body = any, Data = Body> = TriggerWithArgs<
-  Data,
-  unknown,
-  any,
-  Body
->
+export type Mutator<Body = any, Data = Body> =
+  | TriggerWithArgs<Data, unknown, any, Body>
+  | TriggerWithoutArgs<Data, unknown, any, Body>

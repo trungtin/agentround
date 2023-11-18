@@ -4,9 +4,10 @@ import PlaygroundHeader from '@/components/playground/PlaygroundHeader'
 import PlaygroundProvider from '@/context/PlaygroundProvider'
 import Head from 'next/head'
 import { useSearchParams } from 'next/navigation'
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import dynamic from 'next/dynamic'
+import CreateThread from '@/components/playground/threads/CreateThread'
 
 const ThreadsContainer = dynamic(
   () => import('@/components/playground/threads/ThreadsContainer'),
@@ -16,15 +17,6 @@ const ThreadsContainer = dynamic(
 )
 
 export default function Playground() {
-  const params = useSearchParams()
-
-  // support both ?stacked=1,2,3 and ?stacked=1&stacked=2&stacked=3
-  const thread_ids = params
-    .getAll('stacked')
-    .reduce((acc, cur) => {
-      return acc.concat(cur.split(','))
-    }, [] as string[])
-    .filter(Boolean)
   return (
     <React.Fragment>
       <Head>
@@ -32,12 +24,15 @@ export default function Playground() {
       </Head>
       <main className="max-w-screen relative flex h-screen max-h-screen min-h-screen w-screen flex-col">
         <PlaygroundProvider>
-          <PlaygroundHeader />
+          <PlaygroundHeader
+            rightActions={
+              <>
+                <CreateThread />
+              </>
+            }
+          />
           <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
-            <ThreadsContainer
-              thread_ids={thread_ids}
-              thread={null}
-            ></ThreadsContainer>
+            <ThreadsContainer></ThreadsContainer>
             {/* <ConfigSidebar /> */}
           </div>
         </PlaygroundProvider>
