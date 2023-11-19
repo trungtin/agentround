@@ -1,7 +1,6 @@
 // OpenAI
 
-import OpenAI from 'openai'
-export { APIError } from 'openai/error'
+import OpenAI, { APIError } from 'openai'
 
 export interface CursorPageResponse<Item> {
   data: Array<Item>
@@ -9,6 +8,9 @@ export interface CursorPageResponse<Item> {
   last_id: string
   has_more: boolean
 }
+
+export { APIError }
+export type APIError = InstanceType<typeof APIError>
 
 export import Threads = OpenAI.Beta.Threads
 export import Assistants = OpenAI.Beta.Assistants
