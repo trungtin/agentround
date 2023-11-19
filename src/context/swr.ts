@@ -61,7 +61,7 @@ function useFetcher(fetcherOptions: FetcherOptions = null) {
               res.status,
               json.error,
               json.error?.message,
-              Object.fromEntries(res.headers.entries())
+              res.headers
             )
           }
           return json
