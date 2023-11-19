@@ -16,6 +16,7 @@ export default async function handler(
   searchParams.delete('paths')
 
   const knownPaths = ['threads', 'files', 'assistants']
+  console.log('paths: ', paths)
   if (knownPaths.indexOf(paths[0]) === -1) {
     return new Response(`url ${req.url} not found`, { status: 404 })
   }
