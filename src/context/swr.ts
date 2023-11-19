@@ -8,7 +8,7 @@ import useSWRMutation, {
 
 import { useCallback } from 'react'
 import { useAuth } from './AuthProvider'
-import { APIError } from '@/types'
+import { APIError } from '@/utils/errors'
 
 /**
  * options to pass to the fetcher function

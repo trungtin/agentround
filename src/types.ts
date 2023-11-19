@@ -1,7 +1,10 @@
 // OpenAI
 
 import OpenAI from 'openai'
-import { APIError } from '@/utils/errors'
+
+// NOTE: do not re-export types that have conflicting name with OpenAI package
+// (e.g. APIError, ...) . Otherwise, the whole 'openai' package will be imported,
+// which doesn't support browser environment.
 
 export interface CursorPageResponse<Item> {
   data: Array<Item>
@@ -9,8 +12,6 @@ export interface CursorPageResponse<Item> {
   last_id: string
   has_more: boolean
 }
-
-export { APIError }
 
 export import Threads = OpenAI.Beta.Threads
 export import Assistants = OpenAI.Beta.Assistants

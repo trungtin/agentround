@@ -1,5 +1,6 @@
 import { useApi, useMutation } from '@/context/swr'
-import { APIError, Assistants, CursorPageResponse, Threads } from '@/types'
+import { Assistants, CursorPageResponse, Threads } from '@/types'
+import { APIError } from '@/utils/errors'
 import { memo, useEffect } from 'react'
 import ThreadHeader from './ThreadHeader'
 import ThreadInput from './ThreadInput'
