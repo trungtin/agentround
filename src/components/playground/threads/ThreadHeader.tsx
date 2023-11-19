@@ -1,5 +1,6 @@
 import { useAssistant } from '@/context/AssistantContext'
 import { useThreadContext } from '@/context/ThreadContext'
+import { useLastRun } from '@/context/api'
 import { useMutation } from '@/context/swr'
 import { Assistants, Threads } from '@/types'
 import {
@@ -19,6 +20,7 @@ import {
   FiTrash2,
   FiX,
 } from 'react-icons/fi'
+import { waitingRunStatuses } from './runs'
 
 function ThreadTitle(props: { assistant: Assistants.Assistant | undefined }) {
   return (
@@ -37,6 +39,8 @@ function ThreadActionsRun({
   thread: Threads.Thread | undefined
   assistant: Assistants.Assistant | undefined
 }) {
+  const { data: lastRun } = useLastRun(thread?.id)
+
   const { trigger: runThread, isMutating: running } = useMutation<
     Threads.Runs.RunCreateParams | undefined,
     Threads.Runs.Run
@@ -50,7 +54,12 @@ function ThreadActionsRun({
   }, [thread, runThread, assistant])
 
   return (
-    <Button size="sm" onClick={run} isLoading={running} isDisabled={!thread}>
+    <Button
+      size="sm"
+      onClick={run}
+      isLoading={running || waitingRunStatuses.includes(lastRun?.status!)}
+      isDisabled={!thread}
+    >
       <FiPlayCircle />
       <span className="ml-2">Run</span>
     </Button>

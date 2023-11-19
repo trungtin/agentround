@@ -5,18 +5,8 @@ import { memo, useEffect } from 'react'
 import ThreadHeader from './ThreadHeader'
 import ThreadInput from './ThreadInput'
 import ThreadMessages from './ThreadMessages'
-
-const waitingRunStatuses = ['queued', 'in_progress', 'requires_action']
-const stoppedRunStatuses = [
-  'completed',
-  'expired',
-  'cancelling',
-  'cancelled',
-  'failed',
-]
-
-const waitingStepStatuses = ['in_progress']
-const stoppedStepStatuses = ['completed', 'expired', 'failed', 'cancelled']
+import { useLastRun } from '@/context/api'
+import { stoppedStepStatuses, waitingRunStatuses } from './runs'
 
 function ThreadRunStep({ step }: { step: Threads.Runs.RunStep }) {
   return (
@@ -47,13 +37,7 @@ function ThreadRunStatus({
   thread: Threads.Thread | undefined
   refreshMessages: () => void
 }) {
-  const { data: runs, mutate: refreshRuns } = useApi<
-    CursorPageResponse<Threads.Runs.Run>
-  >(thread ? `/threads/${thread.id}/runs` : null, undefined, {
-    query: { limit: 1 },
-  })
-
-  const lastRun = runs?.data?.at(-1)
+  const { data: lastRun, mutate: refreshRuns } = useLastRun(thread?.id)
 
   const { data: runSteps } = useApi<CursorPageResponse<Threads.Runs.RunStep>>(
     thread && lastRun && waitingRunStatuses.includes(lastRun.status)
