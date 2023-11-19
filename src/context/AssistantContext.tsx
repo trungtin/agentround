@@ -27,7 +27,7 @@ function useAppendThread() {
         []
       stacked.push(thread.id)
       searchParams.set('stacked', stacked.join(','))
-      router.replace(`?${searchParams}`)
+      router.push(`?${searchParams}`)
     },
     [router]
   )
@@ -45,7 +45,7 @@ function useRemoveThread() {
       const filtered = stacked.filter((id) => id !== thread_id)
       if (filtered.length != stacked.length) {
         searchParams.set('stacked', filtered.join(','))
-        router.replace(`?${searchParams}`)
+        router.push(`?${searchParams}`)
       }
     },
     [router]
