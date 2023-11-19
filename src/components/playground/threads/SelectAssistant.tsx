@@ -7,11 +7,11 @@ function SelectAssistant({
 }: {
   onSelectAssistant: (assistant: Assistants.Assistant | null) => void
 }) {
-  const { data: assistants } =
+  const { data: assistants, isLoading } =
     useApi<CursorPageResponse<Assistants.Assistant>>('/assistants')
   return (
     <Select
-      placeholder="Select an assistant"
+      placeholder={isLoading ? 'Loading assistants...' : 'Select an assistant'}
       size="sm"
       className="min-w-8"
       onChange={(e) => {

@@ -55,7 +55,12 @@ function CreateThread(props: {}) {
           ></IconButton>
         </ButtonGroup>
       ) : (
-        <Button variant="outline" size="sm" onClick={() => setShowSelect(true)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowSelect(true)}
+          isLoading={creating}
+        >
           New thread
         </Button>
       )}
