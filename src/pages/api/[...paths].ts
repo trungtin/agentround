@@ -12,11 +12,11 @@ export default async function handler(
   res: NextResponse<Response>
 ) {
   const searchParams = req.nextUrl.searchParams
-  const paths = searchParams.getAll('paths')
+  const paths = searchParams.getAll('paths').join('/').split('/')
   searchParams.delete('paths')
 
   const knownPaths = ['threads', 'files', 'assistants']
-  console.log('paths: ', paths)
+
   if (knownPaths.indexOf(paths[0]) === -1) {
     return new Response(`url ${req.url} not found`, { status: 404 })
   }
@@ -34,7 +34,9 @@ export default async function handler(
     .get('content-type')
     ?.includes('multipart/form-data')
 
-  const url = `https://api.openai.com/v1/${paths.join('/')}`
+  const url = `https://api.openai.com/v1/${paths.join(
+    '/'
+  )}?${searchParams.toString()}`
   const body = isFormData ? await req.formData() : req.body
   return fetch(url, {
     headers: {
