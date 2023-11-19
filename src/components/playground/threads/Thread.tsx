@@ -27,6 +27,19 @@ function ThreadRunStep({ step }: { step: Threads.Runs.RunStep }) {
   )
 }
 
+function ThreadRunError({ run }: { run: Threads.Runs.Run | undefined }) {
+  const { data: assistant } = useApi<Assistants.Assistant>(
+    run?.assistant_id && `/assistants/${run.assistant_id}`,
+    { revalidateOnMount: false }
+  )
+  return (
+    <div>
+      <div className="text-sm font-bold">{assistant?.name || 'Assistant'}</div>
+      <div className="text-rose-400">{run?.last_error?.message}</div>
+    </div>
+  )
+}
+
 function ThreadRunStatus({
   thread,
   refreshMessages,
@@ -40,18 +53,14 @@ function ThreadRunStatus({
     query: { limit: 1 },
   })
 
-  const waitingRun = runs?.data?.find((run) =>
-    waitingRunStatuses.includes(run.status)
-  )
+  const lastRun = runs?.data?.at(-1)
 
   const { data: runSteps } = useApi<CursorPageResponse<Threads.Runs.RunStep>>(
-    thread && waitingRun
-      ? `/threads/${thread.id}/runs/${waitingRun.id}/steps`
+    thread && lastRun && waitingRunStatuses.includes(lastRun.status)
+      ? `/threads/${thread.id}/runs/${lastRun.id}/steps`
       : null,
     {
-      refreshInterval: stoppedRunStatuses.includes(waitingRun?.status!)
-        ? 0
-        : 3000,
+      refreshInterval: 3000,
     }
   )
 
@@ -59,16 +68,23 @@ function ThreadRunStatus({
     if (
       runSteps?.data.every((step) => stoppedStepStatuses.includes(step.status))
     ) {
-      if (waitingRunStatuses.includes(waitingRun?.status!)) {
+      if (waitingRunStatuses.includes(lastRun?.status!)) {
         refreshRuns()
       }
       refreshMessages()
     }
-  }, [runSteps, refreshRuns, refreshMessages, waitingRun?.status])
+  }, [runSteps, refreshRuns, refreshMessages, lastRun?.status])
 
-  if (!waitingRun) {
+  if (['expired', 'failed'].includes(lastRun?.status!)) {
+    // render error if run is expired or failed
+    return <ThreadRunError run={lastRun!} />
+  }
+
+  if (!waitingRunStatuses.includes(lastRun?.status!)) {
+    // render nothing if run is not waiting
     return null
   }
+
   // render steps
   return (
     <div className="mt-2 flex flex-col">
