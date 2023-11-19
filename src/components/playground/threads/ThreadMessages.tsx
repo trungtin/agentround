@@ -1,4 +1,4 @@
-import { Threads } from 'openai/resources/beta/threads/threads.mjs'
+import { Threads } from '@/types'
 import ThreadMessage from './ThreadMessage'
 import { useMemo } from 'react'
 

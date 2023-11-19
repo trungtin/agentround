@@ -31,7 +31,7 @@ const ThreadWrapper = ({
         className={`note-container flex flex-col px-4 ${
           // TODO: add accent and extract bg color to theme
           highlighted ? 'bg-white' : 'bg-white'
-        } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}] border-gray-100`}
+        } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}] border-gray-100 last:!border-r`}
         style={{
           left: 40 * i,
           right: -585,
