@@ -9,10 +9,10 @@ import {
   StackedPageStateProvider,
 } from '@/components/stacked/contexts'
 import { useStackedPagesProvider } from '@/components/stacked/hooks'
+import { useAuth } from '@/context/AuthProvider'
 import { ThreadProvider } from '@/context/ThreadContext'
 import { useSearchParams } from 'next/navigation'
 import Thread from './Thread'
-import { useAuth } from '@/context/AuthProvider'
 
 const NOTE_WIDTH = 576 // w-xl
 
@@ -28,7 +28,8 @@ const ThreadWrapper = ({
   return (
     <>
       <div
-        className={`note-container flex flex-col px-4 ${
+        // the thread-container class is used to target this element to scroll it into view
+        className={`thread-container flex flex-col px-4 ${
           // TODO: add accent and extract bg color to theme
           highlighted ? 'bg-white' : 'bg-white'
         } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}] border-gray-100 last:!border-r`}

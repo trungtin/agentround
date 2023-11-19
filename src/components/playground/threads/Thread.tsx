@@ -1,7 +1,7 @@
 import { useApi, useMutation } from '@/context/swr'
 import { Assistants, CursorPageResponse, Threads } from '@/types'
 import { APIError } from '@/utils/errors'
-import { memo, useEffect } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 import ThreadHeader from './ThreadHeader'
 import ThreadInput from './ThreadInput'
 import ThreadMessages from './ThreadMessages'
@@ -109,8 +109,30 @@ function Thread({ threadId }: { threadId: string }) {
     Threads.ThreadMessage
   >(messagesPath)
 
+  const threadRef = useCallback((node) => {
+    if (!node) return
+
+    // scroll to last message when the element is resized (e.g. when there is a new message)
+    const resizeObserver = new ResizeObserver(() => {
+      let scrollElement = node
+      // find the thread container, which is the scrollable parent
+      while (scrollElement) {
+        if (scrollElement.classList.contains('thread-container')) {
+          break
+        }
+        scrollElement = scrollElement.parentElement
+      }
+      if (!scrollElement) return
+      scrollElement.scrollTo({
+        top: scrollElement.scrollHeight,
+        behavior: 'smooth',
+      })
+    })
+    resizeObserver.observe(node)
+  }, [])
+
   return (
-    <div className="flex w-[540px] grow flex-col pb-4">
+    <div className="flex w-[540px] grow flex-col pb-4" ref={threadRef}>
       <ThreadHeader
         assistant={preferredAssistant}
         thread={thread}
