@@ -162,8 +162,8 @@ function ThreadsContainer(props: Props) {
                 <StackedPageStateProvider
                   value={{ active: false, obstructed, overlay, highlighted }}
                 >
-                  <ThreadProvider>
-                    <Thread thread_id={page.id} />
+                  <ThreadProvider threadId={page.id}>
+                    <Thread threadId={page.id} />
                   </ThreadProvider>
                 </StackedPageStateProvider>
               </ThreadWrapper>

@@ -1,9 +1,16 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 
-const ThreadContext = createContext<{}>({})
+const ThreadContext = createContext<{
+  threadId: string
+}>({
+  threadId: '',
+})
 
-export function ThreadProvider(props) {
-  return <ThreadContext.Provider value={{}} {...props} />
+export function ThreadProvider({ children, threadId }) {
+  const value = useMemo(() => ({ threadId }), [threadId])
+  return (
+    <ThreadContext.Provider value={value}>{children}</ThreadContext.Provider>
+  )
 }
 
 export const useThreadContext = () => useContext(ThreadContext)

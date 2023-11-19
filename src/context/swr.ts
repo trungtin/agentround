@@ -8,6 +8,7 @@ import useSWRMutation, {
 
 import { useCallback } from 'react'
 import { useAuth } from './AuthProvider'
+import { APIError } from '@/types'
 
 /**
  * options to pass to the fetcher function
@@ -53,14 +54,26 @@ function useFetcher(fetcherOptions: FetcherOptions = null) {
           Authorization: `Bearer ${token}`,
           ...fetcherOptions?.headers,
         },
-      }).then((res) => res.json())
+      }).then((res) =>
+        res.json().then((json) => {
+          if ('error' in json) {
+            throw new APIError(
+              res.status,
+              json.error,
+              json.error?.message,
+              Object.fromEntries(res.headers.entries())
+            )
+          }
+          return json
+        })
+      )
     },
     [token, fetcherOptions]
   )
 
   return fetcher
 }
-function formatApiUrl(url: string | null) {
+function formatApiUrl(url: string | null | undefined) {
   // Add /api prefix if not present
   if (url && !url.startsWith('/api')) {
     url = `/api${url.startsWith('/') ? '' : '/'}${url}`
@@ -79,7 +92,7 @@ function formatApiUrl(url: string | null) {
  *
  */
 export function useApi<Data = any>(
-  url: string | null,
+  url: string | null | undefined,
   config: SWRConfiguration | undefined = undefined,
   fetcherOptions: FetcherOptions = null
 ) {
@@ -89,6 +102,7 @@ export function useApi<Data = any>(
   if (!('revalidateOnFocus' in config)) {
     config.revalidateOnFocus = false
   }
+  // formatApiUrl here is needed to make sure the key is stable
   return useSWR<Data>(formatApiUrl(url), fetcher, config)
 }
 /**
@@ -104,7 +118,7 @@ export function useApi<Data = any>(
  *
  */
 export function useMutation<Body = any, Data = Body>(
-  url: string | null,
+  url: string | null | undefined,
   config:
     | SWRMutationConfiguration<Data, unknown, any, Body>
     | undefined = undefined,
@@ -115,6 +129,7 @@ export function useMutation<Body = any, Data = Body>(
 
   const fetcher = useFetcher(fetcherOptions)
   return useSWRMutation<Data, unknown, any, Body>(
+    // formatApiUrl here is needed to make sure that the key is stable
     formatApiUrl(url) as any,
     fetcher as MutationFetcher<Data, any, Body>,
     config

@@ -1,5 +1,5 @@
 import { useApi, useMutation } from '@/context/swr'
-import { Assistants, CursorPageResponse, Threads } from '@/types'
+import { APIError, Assistants, CursorPageResponse, Threads } from '@/types'
 import { memo, useEffect } from 'react'
 import ThreadHeader from './ThreadHeader'
 import ThreadInput from './ThreadInput'
@@ -78,15 +78,29 @@ function ThreadRunStatus({
   )
 }
 
-function Thread({ thread_id }: { thread_id: string }) {
-  const { data: thread } = useApi<Threads.Thread>(`/api/threads/${thread_id}`)
+function ErrorThread({ error }: { error: APIError }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center py-4">
+      <div className="text-rose-400">
+        {error.status == 404
+          ? 'This thread has been deleted. Please close it.'
+          : 'Error loading thread'}
+      </div>
+    </div>
+  )
+}
+
+function Thread({ threadId }: { threadId: string }) {
+  const { data: thread, error } = useApi<Threads.Thread>(
+    `/api/threads/${threadId}`
+  )
   // @ts-ignore
   const preferredAssistantId = thread?.metadata?.preferred_assistant_id
   const { data: preferredAssistant } = useApi<Assistants.Assistant>(
     preferredAssistantId ? `/api/assistants/${preferredAssistantId}` : null
   )
 
-  const messagesPath = `/api/threads/${thread_id}/messages`
+  const messagesPath = thread && `/api/threads/${threadId}/messages`
   const { data: messages, mutate: refreshMessages } =
     useApi<CursorPageResponse<Threads.ThreadMessage>>(messagesPath)
   const { trigger: addMessage } = useMutation<
@@ -103,7 +117,10 @@ function Thread({ thread_id }: { thread_id: string }) {
 
       <div className="flex grow flex-col justify-between">
         <div className="pb-4">
-          <ThreadMessages messages={messages?.data}></ThreadMessages>
+          {error && <ErrorThread error={error} />}
+          {thread && (
+            <ThreadMessages messages={messages?.data}></ThreadMessages>
+          )}
           <ThreadRunStatus
             thread={thread}
             refreshMessages={refreshMessages}

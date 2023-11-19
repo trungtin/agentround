@@ -89,7 +89,7 @@ function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
 
   const [asstSelectOpen, setAsstSelectOpen] = useState(false)
 
-  const sendDisabled = !input && !files.length
+  const sendDisabled = !thread || (!input && !files.length)
 
   const addMessage = useCallback(() => {
     if (!input && !files.length) {
@@ -191,6 +191,7 @@ function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
         value={input}
         onChange={onInputChange}
         onKeyDown={onKeyPress}
+        isDisabled={!thread}
       ></Textarea>
       <ButtonGroup size="sm" className="flex space-x-2">
         <Button

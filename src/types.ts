@@ -1,6 +1,7 @@
 // OpenAI
 
 import OpenAI from 'openai'
+export { APIError } from 'openai/error'
 
 export interface CursorPageResponse<Item> {
   data: Array<Item>

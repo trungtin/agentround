@@ -1,4 +1,5 @@
 import { useAssistant } from '@/context/AssistantContext'
+import { useThreadContext } from '@/context/ThreadContext'
 import { useMutation } from '@/context/swr'
 import { Assistants, Threads } from '@/types'
 import {
@@ -49,7 +50,7 @@ function ThreadActionsRun({
   }, [thread, runThread, assistant])
 
   return (
-    <Button size="sm" onClick={run} isLoading={running}>
+    <Button size="sm" onClick={run} isLoading={running} isDisabled={!thread}>
       <FiPlayCircle />
       <span className="ml-2">Run</span>
     </Button>
@@ -61,6 +62,7 @@ function ThreadActions(props: {
   thread: Threads.Thread | undefined
 }) {
   const assistantCtx = useAssistant()
+  const threadCtx = useThreadContext()
   const { trigger: addThread, isMutating: creating } = useMutation<
     Threads.ThreadCreateParams | undefined,
     Threads.Thread
@@ -81,10 +83,10 @@ function ThreadActions(props: {
    * Close the thread by removing it from the URL
    */
   const closeThread = useCallback(() => {
-    if (!props.thread) return
-    assistantCtx.urls.removeThread(props.thread.id)
-    return
-  }, [assistantCtx.urls, props.thread])
+    // in case the thread is failed to load, we can still close it with the threadId from the context
+    const threadId = props.thread?.id || threadCtx.threadId
+    assistantCtx.urls.removeThread(threadId)
+  }, [assistantCtx.urls, props.thread, threadCtx.threadId])
   /**
    * Delete the thread from the API then close it
    */
@@ -111,7 +113,11 @@ function ThreadActions(props: {
             Close Thread
           </MenuItem>
           <MenuDivider />
-          <MenuItem icon={<FiTrash2 />} onClick={deleteThread}>
+          <MenuItem
+            icon={<FiTrash2 />}
+            onClick={deleteThread}
+            isDisabled={!props.thread}
+          >
             Delete Thread
           </MenuItem>
         </MenuList>
