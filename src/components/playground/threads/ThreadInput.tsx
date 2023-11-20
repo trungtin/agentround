@@ -20,6 +20,25 @@ import { FiCheck, FiPaperclip, FiPlayCircle } from 'react-icons/fi'
 import SelectAssistant from './SelectAssistant'
 
 import { Mention, MentionsInput } from 'react-mentions'
+import { useAddMessage } from '@/hooks/threads'
+
+function extractMentions(input: string): [string, string[]] {
+  // mention format @[SuperWriter](asst_NXrnGY9ncK5BOah7HhYFf6sG)
+  const regex = /@\[([^\]]+)\]\(([^\)]+)\)/g
+  const mentions = input.match(regex)
+  if (!mentions) return [input, []]
+  let rawInput = input.replace(regex, '$1')
+  const mentionIds = [
+    ...new Set(
+      mentions.map((m) => {
+        const id = m.match(/\(([^)]+)\)/)?.[1]
+        return id!
+      })
+    ),
+  ]
+
+  return [rawInput, mentionIds]
+}
 
 function UpdateAssistantPopover({
   open,
@@ -131,17 +150,13 @@ function TextareaWithMentions({ portalRef, ...rest }: any) {
 }
 
 type Props = {
-  addMessage: Mutator<Threads.MessageCreateParams, Threads.ThreadMessage>
   thread: Threads.Thread | undefined
 }
 
-function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
+function ThreadInput({ thread }: Props) {
   const [input, setInput] = useState('')
   const [files, setFiles] = useState<File[]>([])
-  const { trigger: addFiles } = useMutation<unknown, Files.FileObject>(
-    '/files',
-    undefined
-  )
+
   const { trigger: runThread, isMutating: running } = useMutation<
     Threads.Runs.RunCreateParams | undefined,
     Threads.Runs.Run
@@ -151,76 +166,34 @@ function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
 
   const sendDisabled = !thread || (!input && !files.length)
 
-  const addMessage = useCallback(() => {
-    if (!input && !files.length) {
-      return Promise.resolve()
-    }
-    let createdFiles: Promise<Files.FileObject[]> = Promise.resolve([])
-    if (files.length) {
-      createdFiles = Promise.all(
-        files.map((file) => {
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('purpose', 'assistants')
-          return addFiles(formData)
-        })
-      )
-    }
-    return createdFiles
-      .then((files) => {
-        return apiAddMessage(
-          {
-            role: 'user',
-            content: input,
-            file_ids: files.map((file) => file.id),
-          },
-          {
-            // @ts-ignore due to types discrepancy
-            optimisticData(
-              currentData: CursorPageResponse<Threads.ThreadMessage>
-            ) {
-              if (!currentData) {
-                return
-              }
-              return {
-                ...currentData,
-                data: [
-                  {
-                    id: 'optimistic',
-                    role: 'user',
-                    file_ids: files.map((file) => file.id),
-                    content: [{ type: 'text', text: { value: input } }],
-                  },
-                  ...currentData.data,
-                ],
-              }
-            },
-          }
-        )
-      })
-      .then((addedMessage) => {
-        setInput('')
-        setFiles([])
-      })
-      .catch((err) => {
-        // TODO: handle error
-        console.error(err)
-      })
-  }, [apiAddMessage, input, files, addFiles])
+  const _addMessage = useAddMessage({ thread })
 
-  const addAndRun = useCallback(() => {
+  const addMessage = useCallback(async () => {
+    const [rawInput, mentionIds] = extractMentions(input)
+    const threadMessage = await _addMessage(rawInput, files)
+    setInput('')
+    setFiles([])
+    return [threadMessage, rawInput, mentionIds]
+  }, [_addMessage, input, files])
+
+  const addAndRun = useCallback(async () => {
     if (!thread) return
-    const preferredAssistantId = (thread.metadata as any)
-      ?.preferred_assistant_id
+    // have to extract first to determine if we need to open the assistant select
+    const [_, mentionIds] = extractMentions(input)
 
-    if (!preferredAssistantId) return setAsstSelectOpen(true)
+    // prefer the assistant that was mentioned
+    let preferredAssistantId = mentionIds[0]
+    if (!preferredAssistantId) {
+      preferredAssistantId = (thread.metadata as any)?.preferred_assistant_id
 
-    addMessage().then(() => {
-      runThread({
-        assistant_id: preferredAssistantId,
-      })
+      if (!preferredAssistantId) return setAsstSelectOpen(true)
+    }
+
+    await addMessage()
+    runThread({
+      assistant_id: preferredAssistantId,
     })
-  }, [addMessage, runThread, thread])
+  }, [addMessage, runThread, thread, input])
 
   const onInputChange = useCallback(
     (e) => {

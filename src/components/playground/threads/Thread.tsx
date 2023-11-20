@@ -104,10 +104,6 @@ function Thread({ threadId }: { threadId: string }) {
   const messagesPath = thread && `/api/threads/${threadId}/messages`
   const { data: messages, mutate: refreshMessages } =
     useApi<CursorPageResponse<Threads.ThreadMessage>>(messagesPath)
-  const { trigger: addMessage } = useMutation<
-    Threads.MessageCreateParams,
-    Threads.ThreadMessage
-  >(messagesPath)
 
   const threadRef = useCallback((node) => {
     if (!node) return
@@ -150,7 +146,7 @@ function Thread({ threadId }: { threadId: string }) {
           ></ThreadRunStatus>
         </div>
         <div className="sticky bottom-4 bg-white">
-          <ThreadInput addMessage={addMessage} thread={thread} />
+          <ThreadInput thread={thread} />
         </div>
       </div>
     </div>
