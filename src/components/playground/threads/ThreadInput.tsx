@@ -13,13 +13,13 @@ import {
   TagLabel,
   Textarea,
 } from '@chakra-ui/react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { useUpdateThread } from '@/context/api'
+import { useAssistants, useUpdateThread } from '@/context/api'
 import { FiCheck, FiPaperclip, FiPlayCircle } from 'react-icons/fi'
 import SelectAssistant from './SelectAssistant'
 
-import ResizeTextarea from 'react-textarea-autosize'
+import { Mention, MentionsInput } from 'react-mentions'
 
 function UpdateAssistantPopover({
   open,
@@ -67,6 +67,66 @@ function UpdateAssistantPopover({
         </FocusLock>
       </PopoverContent>
     </Popover>
+  )
+}
+
+const mentionsInputStyle = {
+  input: { overflow: 'auto', outline: 'none' },
+  // highlighter height indirectly controls the height of the input
+  highlighter: { maxHeight: '15rem' },
+  suggestions: {
+    list: {
+      borderRadius: 'var(--chakra-radii-md)',
+      overflow: 'auto',
+      maxHeight: '9rem',
+      boxShadow: 'var(--chakra-shadows-md)',
+    },
+  },
+}
+// style of each mention
+const mentionStyle = {
+  backgroundColor: 'var(--chakra-colors-gray-200)',
+  padding: '0 0.125rem',
+  margin: '0 -0.175rem',
+}
+
+function TextareaWithMentions({ portalRef, ...rest }: any) {
+  const { data: assistants } = useAssistants({ revalidateOnMount: false })
+  const assistantsMention = useMemo(() => {
+    return assistants?.data.map((a) => ({ id: a.id, display: a.name })) || []
+  }, [assistants])
+  return (
+    <MentionsInput
+      {...rest}
+      style={mentionsInputStyle}
+      suggestionsPortalHost={portalRef?.current}
+      allowSuggestionsAboveCursor
+    >
+      <Mention
+        trigger="@"
+        data={assistantsMention}
+        style={mentionStyle}
+        renderSuggestion={(
+          mention,
+          query,
+          highlightedDisplay,
+          idx,
+          focused
+        ) => {
+          return (
+            <Button
+              className={`w-full !justify-start rounded-none ${
+                focused ? '!bg-gray-200' : '!bg-gray-100'
+              }`}
+              size="sm"
+              rounded={0}
+            >
+              {mention.display}
+            </Button>
+          )
+        }}
+      />
+    </MentionsInput>
   )
 }
 
@@ -176,22 +236,26 @@ function ThreadInput({ addMessage: apiAddMessage, thread }: Props) {
     },
     [addAndRun]
   )
+  const threadInputRef = useRef<HTMLDivElement>(null)
   return (
-    <div className="border-gray-3 -mx-2 space-y-2 rounded-lg border p-4 shadow-xl">
+    <div
+      className="-mx-2 space-y-2 rounded-lg border p-4 shadow-xl focus-within:border-gray-300 focus-within:shadow-md"
+      ref={threadInputRef}
+    >
       <Textarea
-        minRows={1}
-        as={ResizeTextarea}
+        rows={1}
+        as={TextareaWithMentions}
         minH="unset"
-        overflow="hidden"
-        w="100%"
         resize="none"
-        className="focus-visible:!border-none focus-visible:!shadow-none"
+        className="w-full overflow-hidden !p-0 focus-visible:!border-none focus-visible:!shadow-none"
         placeholder="Enter your message...."
         border="none"
         value={input}
         onChange={onInputChange}
         onKeyDown={onKeyPress}
         isDisabled={!thread}
+        // where to render the suggestions
+        portalRef={threadInputRef}
       ></Textarea>
       <ButtonGroup size="sm" className="flex space-x-2">
         <Button

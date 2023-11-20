@@ -1,4 +1,5 @@
-import { CursorPageResponse, Threads } from '@/types'
+import { Assistants, CursorPageResponse, Threads } from '@/types'
+import { SWRConfiguration } from 'swr'
 import { useApi, useMutation } from './swr'
 
 export const useUpdateThread = (thread_id: string | undefined) => {
@@ -23,4 +24,10 @@ export const useLastRun = (thread_id: string | undefined) => {
     data: lastRun,
     ...rest,
   }
+}
+
+export const useAssistants = (
+  config: SWRConfiguration | undefined = undefined
+) => {
+  return useApi<CursorPageResponse<Assistants.Assistant>>('/assistants', config)
 }
