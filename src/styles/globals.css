@@ -8,6 +8,16 @@
     --bg-primary: 243, 244, 246;
     --bg-secondary: 229, 231, 235;
     --bg-tertiary: 209, 213, 219;
+
+    --ba-100: var(--chakra-colors-blackAlpha-100);
+    --ba-200: var(--chakra-colors-blackAlpha-200);
+    --ba-300: var(--chakra-colors-blackAlpha-300);
+    --ba-400: var(--chakra-colors-blackAlpha-400);
+    --ba-500: var(--chakra-colors-blackAlpha-500);
+    --ba-600: var(--chakra-colors-blackAlpha-600);
+    --ba-700: var(--chakra-colors-blackAlpha-700);
+    --ba-800: var(--chakra-colors-blackAlpha-800);
+    --ba-900: var(--chakra-colors-blackAlpha-900);
   }
 
   .dark {
@@ -28,4 +38,105 @@
   .note-columns-container {
     width: unset !important;
   }
+}
+
+/* MARKDOWN CONTENT */
+
+.markdown-content strong,
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  font-weight: 600;
+}
+
+.markdown-content ol {
+  counter-reset: ordered-listitem;
+}
+
+.markdown-content ol ol,
+.markdown-content ol ul,
+.markdown-content ul ol,
+.markdown-content ul ul {
+  margin-bottom: 0;
+  margin-top: 8px;
+}
+
+.markdown-content ol,
+.markdown-content ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-content ol,
+.markdown-content ul,
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin-block-end: 1rem;
+  margin-block-start: 1rem;
+}
+.markdown-content li + li {
+  margin-top: 0.5rem;
+}
+
+.markdown-content ol > li:after {
+  content: counter(ordered-listitem);
+  counter-increment: ordered-listitem;
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.markdown-content li {
+  line-height: 1.4;
+  padding-left: 32px;
+  position: relative;
+}
+
+.markdown-content ul li:before {
+  background: var(--ba-600);
+  border-radius: 50%;
+  content: '';
+  height: 5px;
+  left: 15px;
+  position: absolute;
+  top: 8px;
+  width: 5px;
+}
+
+.markdown-content .md-heading-num,
+.markdown-content ol > li:after {
+  background: var(--ba-100);
+  border-radius: 20px;
+  color: var(--ba-600);
+  font-size: 12px;
+  font-weight: 500;
+  height: 20px;
+  line-height: 19px;
+  padding-top: 1px;
+  text-align: center;
+  width: 20px;
+}
+
+.markdown-content h1 {
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.markdown-content h2 {
+  font-size: 1.5rem;
+  line-height: 1.33;
+}
+
+.markdown-content h3 {
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.markdown-content a {
+  color: var(--chakra-colors-blue-700);
+  text-decoration: underline;
+}
+.markdown-content a:visited {
+  color: var(--chakra-colors-red-800);
 }

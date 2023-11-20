@@ -140,7 +140,7 @@ function ThreadHeader(props: {
   thread: Threads.Thread | undefined
 }) {
   return (
-    <div className="sticky top-0 border-b border-gray-100 bg-white pb-2 pt-4">
+    <div className="sticky top-0 z-50 border-b border-gray-100 bg-white pb-2 pt-4">
       <div className="flex flex-row justify-between">
         <ThreadTitle assistant={props.assistant}></ThreadTitle>
         <ThreadActions

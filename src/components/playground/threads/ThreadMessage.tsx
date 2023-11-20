@@ -2,6 +2,9 @@ import { useApi } from '@/context/swr'
 import { Assistants, Files, Threads } from '@/types'
 import { HStack, Tag, TagLabel } from '@chakra-ui/react'
 
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
 type Props = {
   message: Threads.ThreadMessage
 }
@@ -12,7 +15,7 @@ function MessageAuthor({ message }: { message: Props['message'] }) {
   )
   return (
     <div className="text-sm font-bold">
-      {message.role === 'user' ? 'User' : data?.name || 'Assistant'}
+      {message.role === 'user' ? 'User' : data?.name || 'Assistant'}:
     </div>
   )
 }
@@ -23,7 +26,16 @@ function MessageContent({ message }: { message: Props['message'] }) {
       {message.content?.map((content, idx) => {
         if (content.type == 'text') {
           // TODO: implement annotation
-          return <div key={idx}>{content.text.value}</div>
+          return (
+            <div key={idx}>
+              <Markdown
+                className="markdown-content"
+                remarkPlugins={[remarkGfm]}
+              >
+                {content.text.value}
+              </Markdown>
+            </div>
+          )
         } else if (content.type == 'image_file') {
           // TODO: implement image
           return null
@@ -60,8 +72,8 @@ function MessageFiles({ file_ids }: { file_ids: string[] }) {
 
 export default function ThreadMessage({ message }: Props) {
   return (
-    <div className="mb-3 py-3">
-      <div>
+    <div className="mb-1 py-3">
+      <div className="mb-2">
         <span>{<MessageAuthor message={message} />}</span>
       </div>
       <div>
