@@ -1,9 +1,7 @@
 import {
   BasePlugin,
-  ExecutionContext,
-  PluginContext as PluginContextType,
+  PluginContext as PluginContextType
 } from '@/plugins/base'
-import { BrainstormPlugin } from '@/plugins/brainstorm/brainstorm'
 import { noop } from '@/utils/utils'
 import { createContext, useContext, useMemo } from 'react'
 import { useAssistantContext } from './AssistantContext'
