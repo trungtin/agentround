@@ -7,6 +7,8 @@ import React from 'react'
 import CreateThread from '@/components/playground/threads/CreateThread'
 import dynamic from 'next/dynamic'
 
+import { PluginProvider } from '@/context/plugin'
+
 const ThreadsContainer = dynamic(
   () => import('@/components/playground/threads/ThreadsContainer'),
   {
@@ -22,16 +24,18 @@ export default function Playground() {
       </Head>
       <main className="max-w-screen relative flex h-screen max-h-screen min-h-screen w-screen flex-col">
         <AssistantProvider>
-          <PlaygroundHeader
-            rightActions={
-              <>
-                <CreateThread />
-              </>
-            }
-          />
-          <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
-            <ThreadsContainer></ThreadsContainer>
-          </div>
+          <PluginProvider>
+            <PlaygroundHeader
+              rightActions={
+                <>
+                  <CreateThread />
+                </>
+              }
+            />
+            <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
+              <ThreadsContainer></ThreadsContainer>
+            </div>
+          </PluginProvider>
         </AssistantProvider>
       </main>
     </React.Fragment>

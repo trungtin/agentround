@@ -5,3 +5,5 @@ export const capitalize = (str: string) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
+
+export const noop = (...args: any[]): any => {}

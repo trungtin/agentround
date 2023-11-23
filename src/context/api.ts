@@ -26,8 +26,14 @@ export const useLastRun = (thread_id: string | undefined) => {
   }
 }
 
-export const useAssistants = (
+export const useListAssistants = (
   config: SWRConfiguration | undefined = undefined
 ) => {
   return useApi<CursorPageResponse<Assistants.Assistant>>('/assistants', config)
+}
+
+export const useCreateAssistant = () => {
+  return useMutation<Assistants.AssistantCreateParams, Assistants.Assistant>(
+    '/assistants'
+  )
 }

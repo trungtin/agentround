@@ -1,4 +1,4 @@
-import useSWR, { SWRConfiguration } from 'swr'
+import useSWR, { MutatorOptions, SWRConfiguration, useSWRConfig } from 'swr'
 import useSWRMutation, {
   MutationFetcher,
   SWRMutationConfiguration,
@@ -6,9 +6,9 @@ import useSWRMutation, {
   TriggerWithoutArgs,
 } from 'swr/mutation'
 
-import { useCallback } from 'react'
-import { useAuth } from './AuthProvider'
 import { APIError } from '@/utils/errors'
+import { useCallback, useMemo } from 'react'
+import { useAuth } from './AuthProvider'
 
 /**
  * options to pass to the fetcher function
@@ -35,16 +35,22 @@ function useFetcher(fetcherOptions: FetcherOptions = null) {
 
   const fetcher = useCallback(
     // extra arg is used to pass the body/form-data of the request
-    (url: string, { arg }: { arg?: any } = {}) => {
-      if (fetcherOptions?.query) {
+    (
+      url: string,
+      { arg }: { arg?: any } = {},
+      callOptions: FetcherOptions = {}
+    ) => {
+      const options = Object.assign({}, fetcherOptions, callOptions)
+
+      if (options?.query) {
         const params = new URLSearchParams(
-          fetcherOptions.query as Record<string, string>
+          options.query as Record<string, string>
         )
 
         url = `${url}${url.includes('?') ? '&' : '?'}${params.toString()}`
       }
       return fetch(url, {
-        method: fetcherOptions?.method || 'GET',
+        method: options?.method || 'GET',
         body: arg
           ? arg instanceof FormData
             ? arg
@@ -52,10 +58,11 @@ function useFetcher(fetcherOptions: FetcherOptions = null) {
           : undefined,
         headers: {
           Authorization: `Bearer ${token}`,
-          ...fetcherOptions?.headers,
+          ...options?.headers,
         },
       }).then((res) =>
         res.json().then((json) => {
+          // openai api error
           if ('error' in json) {
             throw new APIError(
               res.status,
@@ -133,6 +140,25 @@ export function useMutation<Body = any, Data = Body>(
     formatApiUrl(url) as any,
     fetcher as MutationFetcher<Data, any, Body>,
     config
+  )
+}
+
+export function useDeferredMutate() {
+  const { mutate } = useSWRConfig()
+  const fetcher = useFetcher()
+
+  return useMemo(
+    () => ({
+      mutate: (
+        url: string,
+        body?: any,
+        fetchOptions?: FetcherOptions,
+        options?: MutatorOptions
+      ) => {
+        return mutate(url, fetcher(url, { arg: body }, fetchOptions), options)
+      },
+    }),
+    [mutate, fetcher]
   )
 }
 

@@ -1,5 +1,5 @@
-import { Mutator, useMutation } from '@/context/swr'
-import { Assistants, CursorPageResponse, Files, Threads } from '@/types'
+import { useMutation } from '@/context/swr'
+import { Assistants, Threads } from '@/types'
 import {
   Button,
   ButtonGroup,
@@ -15,29 +15,92 @@ import {
 } from '@chakra-ui/react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { useAssistants, useUpdateThread } from '@/context/api'
+import { useListAssistants, useUpdateThread } from '@/context/api'
 import { FiCheck, FiPaperclip, FiPlayCircle } from 'react-icons/fi'
 import SelectAssistant from './SelectAssistant'
 
-import { Mention, MentionsInput } from 'react-mentions'
+import { usePluginContext } from '@/context/plugin'
 import { useAddMessage } from '@/hooks/threads'
+import { BasePlugin } from '@/plugins/base'
+import { Mention, MentionsInput } from 'react-mentions'
 
-function extractMentions(input: string): [string, string[]] {
-  // mention format @[SuperWriter](asst_NXrnGY9ncK5BOah7HhYFf6sG)
-  const regex = /@\[([^\]]+)\]\(([^\)]+)\)/g
-  const mentions = input.match(regex)
-  if (!mentions) return [input, []]
-  let rawInput = input.replace(regex, '$1')
-  const mentionIds = [
-    ...new Set(
-      mentions.map((m) => {
-        const id = m.match(/\(([^)]+)\)/)?.[1]
-        return id!
+const agentMentionPattern = /@\[([^\]]+)\]\(([^\)]+)\)/g
+const commandPattern = /\/\[([^\]]+)\]\(([^\)]+)\)/g
+
+/**
+ * Extract mentions pattern from input
+ * @param input the input string
+ * @returns tuple of extracted raw input and mention ids
+ */
+function extractMentions(
+  pattern: RegExp = agentMentionPattern
+): (input: string) => [string, string[]] {
+  return (input: string) => {
+    if (!input) return [input, []]
+    // mention format @[SuperWriter](asst_NXrnGY9ncK5BOah7HhYFf6sG)
+    const mentions = input.match(pattern)
+    if (!mentions) return [input, []]
+
+    // input without mentions
+    let plainInput = input.replace(pattern, '$1')
+    const mentionIds = [
+      ...new Set(
+        mentions.map((m) => {
+          const id = m.match(/\(([^)]+)\)/)?.[1]
+          return id!
+        })
+      ),
+    ]
+
+    return [plainInput, mentionIds]
+  }
+}
+
+/**
+ * Extract message, mentions, and commands from input
+ * @param input the input string
+ * @returns the extracted message, mentions, and commands
+ */
+async function processMessage(
+  input: string,
+  pluginCommands: PluginCommand[]
+): Promise<{
+  plainInput: string | undefined
+  mentionIds: string[]
+  commandIds: string[]
+}> {
+  // iterate through the patterns and extract mentions
+
+  let [plainInput, [mentionIds, commandIds]] = [
+    extractMentions(agentMentionPattern),
+    extractMentions(commandPattern),
+  ].reduce(
+    (acc, fn) => {
+      let [prevInput, prevIds] = acc
+      if (!prevInput)
+        return [prevInput, [...prevIds, []]] as [string, string[][]]
+      const [plainInput, ids] = fn(prevInput)
+      return [plainInput, [...prevIds, ids]] as [string, string[][]]
+    },
+    [input, []] as [string | undefined, string[][]]
+  )
+
+  for (const pluginCommand of pluginCommands) {
+    if (!plainInput) break
+    const { id, plugin } = pluginCommand
+
+    if (commandIds.includes(id)) {
+      const result = await plugin.handleMentionedMessage({
+        message: plainInput,
       })
-    ),
-  ]
-
-  return [rawInput, mentionIds]
+      plainInput = result.message
+    }
+  }
+  return {
+    plainInput,
+    mentionIds,
+    commandIds,
+  }
 }
 
 function UpdateAssistantPopover({
@@ -89,6 +152,14 @@ function UpdateAssistantPopover({
   )
 }
 
+type PluginCommand = {
+  id: string
+  name: string
+  plugin: BasePlugin
+}
+
+type Command = PluginCommand
+
 const mentionsInputStyle = {
   input: { overflow: 'auto', outline: 'none' },
   // highlighter height indirectly controls the height of the input
@@ -109,8 +180,20 @@ const mentionStyle = {
   margin: '0 -0.175rem',
 }
 
-function TextareaWithMentions({ portalRef, ...rest }: any) {
-  const { data: assistants } = useAssistants({ revalidateOnMount: false })
+function TextareaWithMentions({
+  portalRef,
+  commands,
+  ...rest
+}: {
+  portalRef: any
+  commands: Command[]
+  [key: string]: any
+}) {
+  const commandsMention = useMemo(() => {
+    return commands?.map((c) => ({ id: c.id, display: c.name })) || []
+  }, [commands])
+
+  const { data: assistants } = useListAssistants({ revalidateOnMount: false })
   const assistantsMention = useMemo(() => {
     return assistants?.data.map((a) => ({ id: a.id, display: a.name })) || []
   }, [assistants])
@@ -125,6 +208,32 @@ function TextareaWithMentions({ portalRef, ...rest }: any) {
         trigger="@"
         data={assistantsMention}
         style={mentionStyle}
+        markup="@[__display__](__id__)"
+        renderSuggestion={(
+          mention,
+          query,
+          highlightedDisplay,
+          idx,
+          focused
+        ) => {
+          return (
+            <Button
+              className={`w-full !justify-start rounded-none ${
+                focused ? '!bg-gray-200' : '!bg-gray-100'
+              }`}
+              size="sm"
+              rounded={0}
+            >
+              {mention.display}
+            </Button>
+          )
+        }}
+      />
+      <Mention
+        trigger="/"
+        data={commandsMention}
+        style={mentionStyle}
+        markup="/[__display__](__id__)"
         renderSuggestion={(
           mention,
           query,
@@ -166,34 +275,62 @@ function ThreadInput({ thread }: Props) {
 
   const sendDisabled = !thread || (!input && !files.length)
 
-  const _addMessage = useAddMessage({ thread })
+  const { installedPlugins } = usePluginContext()
+
+  const pluginCommands = useMemo(() => {
+    return Object.values(installedPlugins).map(
+      (p): PluginCommand => ({
+        id: p.plugin_name,
+        name: p.display_name,
+        plugin: p,
+      })
+    )
+  }, [installedPlugins])
+
+  const apiAddMessage = useAddMessage({ thread })
+
+  const rawAddMessage = useCallback(
+    async (rawInput) => {
+      let threadMessage: Threads.ThreadMessage | undefined
+      if (rawInput) {
+        threadMessage = await apiAddMessage(rawInput, files)
+      }
+      // some plugins may stop the message from being sent by returning undefined
+      // and handle the message themselves so we can safely clear the input
+      setInput('')
+      setFiles([])
+      return threadMessage
+    },
+    [apiAddMessage, files]
+  )
 
   const addMessage = useCallback(async () => {
-    const [rawInput, mentionIds] = extractMentions(input)
-    const threadMessage = await _addMessage(rawInput, files)
-    setInput('')
-    setFiles([])
-    return [threadMessage, rawInput, mentionIds]
-  }, [_addMessage, input, files])
+    const { plainInput } = await processMessage(input, pluginCommands)
+    rawAddMessage(plainInput)
+  }, [rawAddMessage, input, pluginCommands])
 
   const addAndRun = useCallback(async () => {
     if (!thread) return
     // have to extract first to determine if we need to open the assistant select
-    const [_, mentionIds] = extractMentions(input)
+    const { plainInput, mentionIds } = await processMessage(
+      input,
+      pluginCommands
+    )
 
     // prefer the assistant that was mentioned
     let preferredAssistantId = mentionIds[0]
-    if (!preferredAssistantId) {
+    if (!preferredAssistantId && plainInput) {
       preferredAssistantId = (thread.metadata as any)?.preferred_assistant_id
 
       if (!preferredAssistantId) return setAsstSelectOpen(true)
     }
 
-    await addMessage()
+    const threadMessage = await rawAddMessage(plainInput)
+    if (!threadMessage) return
     runThread({
       assistant_id: preferredAssistantId,
     })
-  }, [addMessage, runThread, thread, input])
+  }, [runThread, thread, input, pluginCommands, rawAddMessage])
 
   const onInputChange = useCallback(
     (e) => {
@@ -227,6 +364,7 @@ function ThreadInput({ thread }: Props) {
         onChange={onInputChange}
         onKeyDown={onKeyPress}
         isDisabled={!thread}
+        commands={pluginCommands}
         // where to render the suggestions
         portalRef={threadInputRef}
       ></Textarea>
