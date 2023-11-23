@@ -32,7 +32,7 @@ const ThreadWrapper = ({
         className={`thread-container flex flex-col px-4 ${
           // TODO: add accent and extract bg color to theme
           highlighted ? 'bg-white' : 'bg-white'
-        } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max lg:w-[${NOTE_WIDTH}] border-gray-100 last:!border-r`}
+        } static w-full max-w-full flex-shrink-0 flex-col overflow-y-auto border-gray-100 last:!border-r md:flex-shrink md:flex-row md:overflow-y-scroll lg:sticky lg:max-w-max`}
         style={{
           left: 40 * i,
           right: -585,
@@ -97,9 +97,10 @@ function ThreadsContainer(props: Props) {
     return ids.map((id) => ({ id }))
   }, [stacked])
 
+  const pageWidth = Math.min(NOTE_WIDTH, width)
   const [state, scrollContainer] = useStackedPagesProvider({
     stackedPages: threads,
-    pageWidth: NOTE_WIDTH,
+    pageWidth,
   })
   const { stackedPages, stackedPageStates } = state
 
@@ -109,9 +110,7 @@ function ThreadsContainer(props: Props) {
     const activeSlug = Object.keys(state.stackedPageStates).find(
       (id) => state.stackedPageStates[id].active
     )
-    indexToShow = state.stackedPages.findIndex(
-      (page) => page.id === activeSlug
-    )
+    indexToShow = state.stackedPages.findIndex((page) => page.id === activeSlug)
     if (indexToShow === -1) {
       indexToShow = state.stackedPages.length - 1
     }
@@ -137,7 +136,7 @@ function ThreadsContainer(props: Props) {
       <div
         className={`note-columns-container min-w-unset w-full flex-grow divide-x transition duration-100 md:w-full`}
         style={{
-          width: NOTE_WIDTH * pages.length + 1,
+          width: pageWidth * pages.length + 1,
         }}
       >
         {/* Render the stacked pages */}
@@ -166,7 +165,7 @@ function ThreadsContainer(props: Props) {
                   value={{ active: false, obstructed, overlay, highlighted }}
                 >
                   <ThreadProvider threadId={page.id}>
-                    <Thread threadId={page.id} />
+                    <Thread threadId={page.id} threadWidth={pageWidth} />
                   </ThreadProvider>
                 </StackedPageStateProvider>
               </ThreadWrapper>

@@ -91,7 +91,13 @@ function ErrorThread({ error }: { error: APIError }) {
   )
 }
 
-function Thread({ threadId }: { threadId: string }) {
+function Thread({
+  threadId,
+  threadWidth,
+}: {
+  threadId: string
+  threadWidth: number
+}) {
   const { data: thread, error } = useApi<Threads.Thread>(
     `/api/threads/${threadId}`
   )
@@ -128,7 +134,11 @@ function Thread({ threadId }: { threadId: string }) {
   }, [])
 
   return (
-    <div className="flex w-[540px] grow flex-col pb-4" ref={threadRef}>
+    <div
+      className="flex grow flex-col pb-4"
+      style={{ width: `calc(${threadWidth}px - 2rem)` }}
+      ref={threadRef}
+    >
       <ThreadHeader
         assistant={preferredAssistant}
         thread={thread}

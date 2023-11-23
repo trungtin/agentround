@@ -53,11 +53,11 @@ function useScroll() {
 
 export function useStackedPagesProvider({
   stackedPages,
-  pageWidth = 625,
+  pageWidth,
   obstructedPageWidth = 40,
 }: {
   stackedPages: { id: string }[]
-  pageWidth?: number
+  pageWidth: number
   obstructedPageWidth?: number
 }) {
   const [scroll, containerWidth, setRef, containerRef] = useScroll()
