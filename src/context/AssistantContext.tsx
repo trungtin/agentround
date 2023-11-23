@@ -68,4 +68,4 @@ export function AssistantProvider(props: PropsWithChildren) {
   return <AssistantContext.Provider {...props} value={value} />
 }
 
-export const useAssistant = () => React.useContext(AssistantContext)
+export const useAssistantContext = () => React.useContext(AssistantContext)

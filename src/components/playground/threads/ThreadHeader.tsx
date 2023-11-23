@@ -1,4 +1,4 @@
-import { useAssistant } from '@/context/AssistantContext'
+import { useAssistantContext } from '@/context/AssistantContext'
 import { useThreadContext } from '@/context/ThreadContext'
 import { useLastRun } from '@/context/api'
 import { useMutation } from '@/context/swr'
@@ -70,7 +70,7 @@ function ThreadActions(props: {
   assistant: Assistants.Assistant | undefined
   thread: Threads.Thread | undefined
 }) {
-  const assistantCtx = useAssistant()
+  const assistantCtx = useAssistantContext()
   const threadCtx = useThreadContext()
   const { trigger: addThread, isMutating: creating } = useMutation<
     Threads.ThreadCreateParams | undefined,

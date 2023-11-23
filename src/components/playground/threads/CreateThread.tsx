@@ -1,4 +1,4 @@
-import { useAssistant } from '@/context/AssistantContext'
+import { useAssistantContext } from '@/context/AssistantContext'
 import { useApi, useMutation } from '@/context/swr'
 import { Assistants, CursorPageResponse, Threads } from '@/types'
 import { Button, ButtonGroup, IconButton, Select } from '@chakra-ui/react'
@@ -9,7 +9,7 @@ import SelectAssistant from './SelectAssistant'
 import { useAuth } from '@/context/AuthProvider'
 
 function CreateThread(props: {}) {
-  const assistantCtx = useAssistant()
+  const assistantCtx = useAssistantContext()
   const { token } = useAuth()
   const [showSelect, setShowSelect] = useState(false)
 
