@@ -109,11 +109,13 @@ function ThreadsContainer(props: Props) {
     const activeSlug = Object.keys(state.stackedPageStates).find(
       (id) => state.stackedPageStates[id].active
     )
-    indexToShow = state.stackedPages.findIndex((page) => page.id === activeSlug)
+    indexToShow = state.stackedPages.findIndex(
+      (page) => page.id === activeSlug
+    )
     if (indexToShow === -1) {
       indexToShow = state.stackedPages.length - 1
     }
-    pages = [state.stackedPages[indexToShow]]
+    pages = [state.stackedPages[indexToShow]].filter(Boolean)
   }
 
   {
