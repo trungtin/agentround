@@ -8,10 +8,10 @@ export type PluginContext = {
   updateAssistant: (
     id: string,
     assistant: Assistants.AssistantUpdateParams
-  ) => Promise<Assistants.Assistant>
+  ) => Promise<Assistants.Assistant | undefined>
 
   // TODO: only allow delete assistant if it is created by this plugin
-  deleteAssistant: (id: string) => Promise<Assistants.Assistant>
+  deleteAssistant: (id: string) => Promise<void>
 
   createThread: (thread: Threads.ThreadCreateParams) => Promise<Threads.Thread>
   appendThread: (thread: Threads.Thread) => void

@@ -32,8 +32,3 @@ export const useListAssistants = (
   return useApi<CursorPageResponse<Assistants.Assistant>>('/assistants', config)
 }
 
-export const useCreateAssistant = () => {
-  return useMutation<Assistants.AssistantCreateParams, Assistants.Assistant>(
-    '/assistants'
-  )
-}

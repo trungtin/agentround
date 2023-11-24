@@ -10,6 +10,8 @@ import { APIError } from '@/utils/errors'
 import { useCallback, useMemo } from 'react'
 import { useAuth } from './AuthProvider'
 
+type FetcherMethods = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
 /**
  * options to pass to the fetcher function
  * @property headers headers to pass to the request
@@ -17,9 +19,9 @@ import { useAuth } from './AuthProvider'
  * @property query query params to append to the url so that we can create a static key for swr
  *
  */
-type FetcherOptions = {
+type FetcherOptions<M extends FetcherMethods = FetcherMethods> = {
   headers?: Record<string, string>
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  method?: M
   query?: Record<string, string | number | boolean>
 } | null
 
@@ -143,23 +145,66 @@ export function useMutation<Body = any, Data = Body>(
   )
 }
 
-export function useDeferredMutate() {
+const defaultMutateFetcherOptions = {
+  method: 'POST' as const,
+}
+
+/**
+ * Mutate function similar to calling fetch directly but with the benefits of updating swr cache
+ * @param presetFetchOptions
+ * @returns
+ */
+export function useDeferredMutate(
+  presetFetchOptions: FetcherOptions = defaultMutateFetcherOptions
+) {
   const { mutate } = useSWRConfig()
   const fetcher = useFetcher()
 
   return useMemo(
     () => ({
-      mutate: (
+      mutate: <Data = any>(
         url: string,
         body?: any,
         fetchOptions?: FetcherOptions,
         options?: MutatorOptions
       ) => {
-        return mutate(url, fetcher(url, { arg: body }, fetchOptions), options)
+        const formattedUrl = formatApiUrl(url)!
+        return mutate<Data>(
+          formattedUrl,
+          fetcher(
+            formattedUrl,
+            { arg: body },
+            Object.assign({}, fetchOptions, presetFetchOptions)
+          ),
+          options
+        )
       },
     }),
-    [mutate, fetcher]
+    [mutate, fetcher, presetFetchOptions]
   )
+}
+
+const defaultQueryFetcherOptions = {
+  method: 'GET' as const,
+}
+
+/**
+ * Query function similar to fetch but with the benefits of also update swr cache with the same key
+ * @param presetFetchOptions
+ * @returns
+ */
+export function useDeferredQuery(
+  presetFetchOptions: FetcherOptions<'GET'> = defaultQueryFetcherOptions
+) {
+  if (presetFetchOptions?.method != 'GET') {
+    throw new Error('useDeferredQuery must use with "GET" method only')
+  }
+  const result = useDeferredMutate(presetFetchOptions)
+  return useMemo(() => {
+    const { mutate, ...rest } = result
+    // rename mutate => query
+    return { query: mutate, ...rest }
+  }, [result])
 }
 
 // trigger type of useMutation

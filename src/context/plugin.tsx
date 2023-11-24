@@ -1,12 +1,10 @@
-import {
-  BasePlugin,
-  PluginContext as PluginContextType
-} from '@/plugins/base'
+import { useCreateAssistant, useCreateThread } from '@/hooks/plugin-api'
+import { BasePlugin, PluginContext as PluginContextType } from '@/plugins/base'
+import { Assistants, CursorPageResponse } from '@/types'
 import { noop } from '@/utils/utils'
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 import { useAssistantContext } from './AssistantContext'
-import { useCreateAssistant } from './api'
-import { useDeferredMutate } from './swr'
+import { useDeferredMutate, useDeferredQuery } from './swr'
 
 const PluginContext = createContext<{
   installedPlugins: Record<string, BasePlugin>
@@ -15,24 +13,77 @@ const PluginContext = createContext<{
 export const PluginProvider = ({ children }) => {
   const assistantsContext = useAssistantContext()
   const { trigger: createAssistant } = useCreateAssistant()
+  const { trigger: createThread } = useCreateThread()
   const { mutate } = useDeferredMutate()
-  const pluginContext: PluginContextType = useMemo(() => {
-    return {
-      listAssistants: noop,
-      createAssistant: (params) => createAssistant(params),
-      updateAssistant: (id, params) => mutate('/assistants/' + id, params),
-      deleteAssistant: noop,
-      createThread: noop,
-      createRun: noop,
+  const { query } = useDeferredQuery()
+  const pluginContext = useCallback(
+    (Plugin: { new (ctx: PluginContextType): BasePlugin }) => {
+      // only forward the args that are needed to prevent plugin access to the whole api
+      // e.g. { createAssistant: (params) => createAssistant(params) } instead of { createAssistant }
 
-      appendThread: assistantsContext.urls.appendThread,
-      removeThread: assistantsContext.urls.removeThread,
-    }
-  }, [mutate, createAssistant, assistantsContext.urls])
+      const context: PluginContextType = {
+        listAssistants: async () => {
+          const data = await query<CursorPageResponse<Assistants.Assistant>>(
+            '/assistants'
+          )
+
+          return (
+            data?.data.filter(
+              (a) =>
+                plugin.plugin_name &&
+                (a.metadata as any)?.__ar_plugin === plugin.plugin_name
+            ) || []
+          )
+        },
+        createAssistant: (params) => {
+          return createAssistant({
+            ...params,
+            metadata: {
+              ...(params.metadata || {}),
+              __ar_plugin: plugin.plugin_name,
+            },
+          })
+        },
+        updateAssistant: async (id, params) => {
+          const assistants = await context.listAssistants()
+          if (assistants?.find((a) => a.id === id)) {
+            return mutate('/assistants/' + id, params)
+          }
+          throw new Error('Assistant not found')
+        },
+        deleteAssistant: async (id) => {
+          const assistants = await context.listAssistants()
+          if (assistants?.find((a) => a.id === id)) {
+            mutate('/assistants/' + id, null, {
+              method: 'DELETE',
+            })
+            return
+          }
+          throw new Error('Assistant not found')
+        },
+        createThread: (params) => {
+          return createThread({
+            ...params,
+            metadata: {
+              ...(params.metadata || {}),
+              __ar_plugin: plugin.plugin_name,
+            },
+          })
+        },
+        createRun: noop,
+
+        appendThread: assistantsContext.urls.appendThread,
+        removeThread: assistantsContext.urls.removeThread,
+      }
+      const plugin = new Plugin(context)
+      return plugin
+    },
+    [mutate, query, createAssistant, createThread, assistantsContext.urls]
+  )
   const installedPlugins = useMemo(() => {
     return Object.fromEntries(
-      ([] as any[]).map((P) => {
-        const plugin = new P(pluginContext)
+      [].map((P) => {
+        const plugin = pluginContext(P)
         return [plugin.plugin_name, plugin]
       })
     )
@@ -40,10 +91,9 @@ export const PluginProvider = ({ children }) => {
 
   const pluginContextValue = useMemo(() => {
     return {
-      pluginContext,
       installedPlugins,
     }
-  }, [pluginContext, installedPlugins])
+  }, [installedPlugins])
 
   return (
     <PluginContext.Provider value={pluginContextValue}>
