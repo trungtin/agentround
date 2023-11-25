@@ -1,5 +1,5 @@
-import { useMutation } from '@/context/swr'
-import { Assistants, Threads } from '@/types'
+import { useApi, useMutation } from '@/context/swr'
+import { Assistants, CursorPageResponse, Threads } from '@/types'
 import {
   Button,
   ButtonGroup,
@@ -63,7 +63,8 @@ function extractMentions(
  */
 async function processMessage(
   input: string,
-  pluginCommands: PluginCommand[]
+  pluginCommands: PluginCommand[],
+  threadMessages: Threads.ThreadMessage[] | undefined
 ): Promise<{
   plainInput: string | undefined
   mentionIds: string[]
@@ -92,6 +93,7 @@ async function processMessage(
     if (commandIds.includes(id)) {
       const result = await plugin.handleMentionedMessage({
         message: plainInput,
+        threadMessages: threadMessages || [],
       })
       plainInput = result.message
     }
@@ -277,6 +279,10 @@ function ThreadInput({ thread }: Props) {
 
   const { installedPlugins } = usePluginContext()
 
+  const { data: threadMessages } = useApi<
+    CursorPageResponse<Threads.ThreadMessage>
+  >(thread && `/threads/${thread.id}/messages`)
+
   const pluginCommands = useMemo(() => {
     return Object.values(installedPlugins).map(
       (p): PluginCommand => ({
@@ -305,7 +311,11 @@ function ThreadInput({ thread }: Props) {
   )
 
   const addMessage = useCallback(async () => {
-    const { plainInput } = await processMessage(input, pluginCommands)
+    const { plainInput } = await processMessage(
+      input,
+      pluginCommands,
+      threadMessages?.data
+    )
     rawAddMessage(plainInput)
   }, [rawAddMessage, input, pluginCommands])
 
@@ -314,7 +324,8 @@ function ThreadInput({ thread }: Props) {
     // have to extract first to determine if we need to open the assistant select
     const { plainInput, mentionIds } = await processMessage(
       input,
-      pluginCommands
+      pluginCommands,
+      threadMessages?.data
     )
 
     // prefer the assistant that was mentioned
