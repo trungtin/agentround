@@ -41,11 +41,11 @@ const ThreadWrapper = ({
         }}
       >
         <div
-          className={`hidden transition-opacity duration-100 ${
+          className={`sticky top-0 hidden h-0 w-0 transition-opacity duration-100 ${
             obstructed ? 'opacity-100' : 'opacity-0'
           } md:block`}
         >
-          <div className="absolute z-10 origin-left rotate-90 transform pb-2">
+          <div className="z-10 origin-left rotate-90 transform whitespace-nowrap pb-2">
             {/* <LinkToStacked class="decoration-none font-bold" to={id}> */}
             {title || id}
             {/* </LinkToStacked> */}
