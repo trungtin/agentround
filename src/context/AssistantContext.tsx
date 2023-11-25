@@ -6,17 +6,17 @@ const noop = (() => {}) as any
 
 const AssistantContext = React.createContext<{
   urls: {
-    appendThread(thread: Threads.Thread): void
-    removeThread(thread_id: string): void
+    appendPanel(thread: Threads.Thread): void
+    removePanel(thread_id: string): void
   }
 }>({
   urls: {
-    appendThread: noop,
-    removeThread: noop,
+    appendPanel: noop,
+    removePanel: noop,
   },
 })
 
-function useAppendThread() {
+function useAppendPanel() {
   const router = useRouter()
 
   return useCallback(
@@ -33,7 +33,7 @@ function useAppendThread() {
   )
 }
 
-function useRemoveThread() {
+function useRemovePanel() {
   const router = useRouter()
 
   return useCallback(
@@ -53,16 +53,16 @@ function useRemoveThread() {
 }
 
 export function AssistantProvider(props: PropsWithChildren) {
-  const appendThread = useAppendThread()
-  const removeThread = useRemoveThread()
+  const appendPanel = useAppendPanel()
+  const removePanel = useRemovePanel()
   const value = React.useMemo(
     () => ({
       urls: {
-        appendThread,
-        removeThread,
+        appendPanel,
+        removePanel,
       },
     }),
-    [appendThread, removeThread]
+    [appendPanel, removePanel]
   )
 
   return <AssistantContext.Provider {...props} value={value} />

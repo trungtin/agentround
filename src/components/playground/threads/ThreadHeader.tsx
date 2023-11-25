@@ -80,7 +80,7 @@ function ThreadActions(props: {
     addThread({
       metadata: { preferred_assistant_id: props.assistant?.id },
     }).then((thread) => {
-      assistantCtx.urls.appendThread(thread)
+      assistantCtx.urls.appendPanel(thread)
     })
   }, [props.assistant, addThread, assistantCtx.urls])
   const { trigger: deleteThreadApi, isMutating: deleting } = useMutation(
@@ -94,7 +94,7 @@ function ThreadActions(props: {
   const closeThread = useCallback(() => {
     // in case the thread is failed to load, we can still close it with the threadId from the context
     const threadId = props.thread?.id || threadCtx.threadId
-    assistantCtx.urls.removeThread(threadId)
+    assistantCtx.urls.removePanel(threadId)
   }, [assistantCtx.urls, props.thread, threadCtx.threadId])
   /**
    * Delete the thread from the API then close it

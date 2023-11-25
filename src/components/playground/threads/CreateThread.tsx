@@ -28,7 +28,7 @@ function CreateThread(props: {}) {
     return addThread({
       metadata: { preferred_assistant_id: selectedAssistant.id },
     }).then((thread) => {
-      assistantCtx.urls.appendThread(thread)
+      assistantCtx.urls.appendPanel(thread)
       setShowSelect(false)
     })
   }, [selectedAssistant, addThread, assistantCtx.urls])

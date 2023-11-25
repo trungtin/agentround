@@ -72,8 +72,8 @@ export const PluginProvider = ({ children }) => {
         },
         createRun: noop,
 
-        appendThread: assistantsContext.urls.appendThread,
-        removeThread: assistantsContext.urls.removeThread,
+        appendPanel: assistantsContext.urls.appendPanel,
+        removePanel: assistantsContext.urls.removePanel,
       }
       const plugin = new Plugin(context)
       return plugin

@@ -14,9 +14,9 @@ export type PluginContext = {
   deleteAssistant: (id: string) => Promise<void>
 
   createThread: (thread: Threads.ThreadCreateParams) => Promise<Threads.Thread>
-  appendThread: (thread: Threads.Thread) => void
+  appendPanel: (thread: Threads.Thread) => void
   // TODO: only allow remove thread if it is created by this plugin
-  removeThread: (thread_id: string) => void
+  removePanel: (thread_id: string) => void
 
   createRun: (run: Threads.RunCreateParams) => Promise<Threads.Run>
 }
@@ -25,12 +25,16 @@ export type ExecutionContext = {
   message: string
 }
 
-type PluginOnMessageParams = { message: string }
+type PluginOnMessageParams = {
+  message: string
+  threadMessages: Threads.ThreadMessage[]
+}
 type PluginOnMessageReturn = { message: string | undefined }
 
 export abstract class BasePlugin {
   abstract plugin_name: string
   abstract display_name: string
+  description?: string
   abstract version: string
   abstract author: string
 
@@ -49,6 +53,7 @@ export abstract class BasePlugin {
    */
   async handleMentionedMessage({
     message,
+    threadMessages,
   }: PluginOnMessageParams): Promise<PluginOnMessageReturn> {
     return {
       message,
