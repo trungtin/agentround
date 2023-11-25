@@ -136,7 +136,7 @@ function Thread({
   return (
     <div
       className="flex grow flex-col pb-4"
-      style={{ width: `calc(${threadWidth}px - 2rem)` }}
+      style={{ width: `calc(${threadWidth}px - 2rem - 1px)` }}
       ref={threadRef}
     >
       <ThreadHeader

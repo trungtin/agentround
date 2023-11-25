@@ -93,7 +93,7 @@
   position: relative;
 }
 
-.markdown-content ul li:before {
+.markdown-content ul > li:before {
   background: var(--ba-600);
   border-radius: 50%;
   content: '';
