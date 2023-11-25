@@ -7,6 +7,7 @@ import ThreadInput from './ThreadInput'
 import ThreadMessages from './ThreadMessages'
 import { useLastRun } from '@/context/api'
 import { stoppedStepStatuses, waitingRunStatuses } from './runs'
+import { PanelLoadingError } from '../panel/Panel'
 
 function ThreadRunStep({ step }: { step: Threads.Runs.RunStep }) {
   return (
@@ -35,9 +36,9 @@ function ThreadRunStatus({
   refreshMessages,
 }: {
   thread: Threads.Thread | undefined
-  refreshMessages: () => void
+  refreshMessages: () => any
 }) {
-  const { data: lastRun, mutate: refreshRuns } = useLastRun(thread?.id)
+  const { data: lastRun, refresh: refreshRuns } = useLastRun(thread?.id)
 
   const { data: runSteps } = useApi<CursorPageResponse<Threads.Runs.RunStep>>(
     thread && lastRun && waitingRunStatuses.includes(lastRun.status)
@@ -79,24 +80,12 @@ function ThreadRunStatus({
   )
 }
 
-function ErrorThread({ error }: { error: APIError }) {
-  return (
-    <div className="flex h-full flex-col items-center justify-center py-4">
-      <div className="text-rose-400">
-        {error.status == 404
-          ? 'This thread has been deleted. Please close it.'
-          : 'Error loading thread'}
-      </div>
-    </div>
-  )
-}
-
 function Thread({
   threadId,
   threadWidth,
 }: {
   threadId: string
-  threadWidth: number
+  threadWidth: number | string
 }) {
   const { data: thread, error } = useApi<Threads.Thread>(
     `/api/threads/${threadId}`
@@ -108,7 +97,7 @@ function Thread({
   )
 
   const messagesPath = thread && `/api/threads/${threadId}/messages`
-  const { data: messages, mutate: refreshMessages } =
+  const { data: messages, refresh: refreshMessages } =
     useApi<CursorPageResponse<Threads.ThreadMessage>>(messagesPath)
 
   const threadRef = useCallback((node) => {
@@ -136,7 +125,7 @@ function Thread({
   return (
     <div
       className="flex grow flex-col pb-4"
-      style={{ width: `calc(${threadWidth}px - 2rem - 1px)` }}
+      style={{ width: threadWidth }}
       ref={threadRef}
     >
       <ThreadHeader
@@ -146,7 +135,13 @@ function Thread({
 
       <div className="flex grow flex-col justify-between">
         <div className="pb-4">
-          {error && <ErrorThread error={error} />}
+          {error && (
+            <PanelLoadingError>
+              {error.status == 404
+                ? 'This thread has been deleted. Please close it.'
+                : 'Error loading thread'}
+            </PanelLoadingError>
+          )}
           {thread && (
             <ThreadMessages messages={messages?.data}></ThreadMessages>
           )}

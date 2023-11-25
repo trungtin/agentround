@@ -13,6 +13,7 @@ export interface CursorPageResponse<Item> {
   has_more: boolean
 }
 
+export import Models = OpenAI.Models
 export import Threads = OpenAI.Beta.Threads
 export import Assistants = OpenAI.Beta.Assistants
 export import Files = OpenAI.Files

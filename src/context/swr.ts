@@ -91,7 +91,9 @@ function formatApiUrl(url: string | null | undefined) {
 }
 
 /**
- * hook to fetch data from the server
+ * hook to fetch data from the server, similar to useSWR but with the following changes:
+ * - mutate function that automatically call the api (method: POST) with the same key similar to useMutation
+ * - the original mutate function is renamed to refresh
  *
  * @param url url to fetch
  * @param config swr config
@@ -112,7 +114,30 @@ export function useApi<Data = any>(
     config.revalidateOnFocus = false
   }
   // formatApiUrl here is needed to make sure the key is stable
-  return useSWR<Data>(formatApiUrl(url), fetcher, config)
+  const finalUrl = formatApiUrl(url)
+  const result = useSWR<Data>(finalUrl, fetcher, config)
+
+  return useMemo(() => {
+    const { mutate, ...rest } = result
+
+    return {
+      ...rest,
+      refresh: mutate,
+      // this function could receive fetcherOptions as well but to keep it consistent with Mutator interface
+      // we only accept body and config
+      mutate: ((body: any, config: MutatorOptions = {}) => {
+        // should throw on error by default
+        if (!('throwOnError' in config)) config.throwOnError = true
+
+        return mutate<any>(
+          finalUrl
+            ? fetcher(finalUrl, { arg: body }, { method: 'POST' })
+            : undefined,
+          config
+        )
+      }) as Mutator,
+    }
+  }, [result, finalUrl, fetcher])
 }
 /**
  * hook to mutate data on the server and revalidate the data on success

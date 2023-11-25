@@ -74,6 +74,7 @@ export function useStackedPagesProvider({
       stackedPages.map((x) => [
         x.id,
         {
+          id: x.id,
           obstructed: false,
           highlighted: false,
           overlay: scroll > pageWidth - obstructedOffset,
@@ -109,6 +110,7 @@ export function useStackedPagesProvider({
       setStackedPageStates(
         stackedPages.reduce((prev, x, i, a) => {
           prev[x.id] = {
+            id: x.id,
             overlay: true,
             obstructed: false,
             highlighted: false,
@@ -123,6 +125,7 @@ export function useStackedPagesProvider({
     setStackedPageStates(
       stackedPages.reduce((prev, x, i, a) => {
         prev[x.id] = {
+          id: x.id,
           highlighted: false,
           overlay:
             scroll >

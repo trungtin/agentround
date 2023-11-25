@@ -7,6 +7,7 @@ type StackedPageState = {
   overlay: boolean
   highlighted: boolean
   active: boolean
+  id: string
 }
 
 export type ScrollState = {
@@ -35,6 +36,7 @@ export const StackedPageStateContext = createContext<StackedPageState>({
   overlay: false,
   highlighted: false,
   active: false,
+  id: '',
 })
 
 export const StackedPageStateProvider = StackedPageStateContext.Provider

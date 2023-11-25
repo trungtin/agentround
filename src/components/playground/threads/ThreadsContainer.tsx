@@ -11,9 +11,9 @@ import {
 } from '@/components/stacked/contexts'
 import { useStackedPagesProvider } from '@/components/stacked/hooks'
 import { useAuth } from '@/context/AuthProvider'
-import { ThreadProvider } from '@/context/ThreadContext'
 import { useSearchParams } from 'next/navigation'
 import Thread from './Thread'
+import AssistantPanel from '../assistants/AssistantPanel'
 
 const NOTE_WIDTH = 576 // w-xl
 
@@ -154,6 +154,8 @@ function ThreadsContainer(props: Props) {
             const highlighted =
               stackedPageStates[page.id] &&
               stackedPageStates[page.id].highlighted
+
+            const panelWidth = `calc(${pageWidth}px - 2rem - 1px)`
             return (
               <PageIndexProvider value={i} key={page.id}>
                 <ThreadWrapper
@@ -165,11 +167,22 @@ function ThreadsContainer(props: Props) {
                   highlighted={highlighted}
                 >
                   <StackedPageStateProvider
-                    value={{ active: false, obstructed, overlay, highlighted }}
+                    value={{
+                      active: false,
+                      obstructed,
+                      overlay,
+                      highlighted,
+                      id: page.id,
+                    }}
                   >
-                    <ThreadProvider threadId={page.id}>
-                      <Thread threadId={page.id} threadWidth={pageWidth} />
-                    </ThreadProvider>
+                    {page.id.startsWith('thread_') ? (
+                      <Thread threadId={page.id} threadWidth={panelWidth} />
+                    ) : page.id.startsWith('asst_') ? (
+                      <AssistantPanel
+                        asstId={page.id}
+                        panelWidth={panelWidth}
+                      />
+                    ) : null}
                   </StackedPageStateProvider>
                 </ThreadWrapper>
               </PageIndexProvider>
