@@ -1,0 +1,1 @@
+export const NEW_ASST_ID = `asst_[[NEW]]`

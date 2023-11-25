@@ -6,8 +6,11 @@ const noop = (() => {}) as any
 
 const AssistantContext = React.createContext<{
   urls: {
-    appendPanel(thread: Threads.Thread | Assistants.Assistant | string): void
-    removePanel(thread_id: string): void
+    appendPanel(
+      panel: Threads.Thread | Assistants.Assistant | string,
+      replace?: string
+    ): void
+    removePanel(panel_id: string): void
   }
 }>({
   urls: {
@@ -20,16 +23,26 @@ function useAppendPanel() {
   const router = useRouter()
 
   return useCallback(
-    (thread: Threads.Thread | string) => {
+    (
+      panel: Threads.Thread | Assistants.Assistant | string,
+      replace?: string
+    ) => {
       const searchParams = new URLSearchParams(document.location.search)
-      const stacked =
+      let stacked =
         searchParams.getAll('stacked')?.join(',').split(',').filter(Boolean) ||
         []
-      if (typeof thread === 'string') {
-        stacked.push(thread)
+
+      const panel_id = typeof panel === 'string' ? panel : panel.id
+      if (
+        replace !== undefined &&
+        replace !== panel_id &&
+        stacked.includes(replace)
+      ) {
+        stacked = stacked.map((id) => (id === replace ? panel_id : id))
       } else {
-        stacked.push(thread.id)
+        stacked.push(panel_id)
       }
+
       searchParams.set('stacked', stacked.join(','))
       router.push(`?${searchParams}`)
     },
@@ -41,12 +54,12 @@ function useRemovePanel() {
   const router = useRouter()
 
   return useCallback(
-    (thread_id: string) => {
+    (panel_id: string) => {
       const searchParams = new URLSearchParams(document.location.search)
       const stacked =
         searchParams.getAll('stacked')?.join(',').split(',').filter(Boolean) ||
         []
-      const filtered = stacked.filter((id) => id !== thread_id)
+      const filtered = stacked.filter((id) => id !== panel_id)
       if (filtered.length != stacked.length) {
         searchParams.set('stacked', filtered.join(','))
         router.push(`?${searchParams}`)

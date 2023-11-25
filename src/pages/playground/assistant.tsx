@@ -4,10 +4,10 @@ import { AssistantProvider } from '@/context/AssistantContext'
 import Head from 'next/head'
 import React from 'react'
 
-import CreateThread from '@/components/playground/threads/CreateThread'
 import dynamic from 'next/dynamic'
 
 import { PluginProvider } from '@/context/plugin'
+import CreateMenu from '@/components/playground/menu/CreateMenu'
 
 const ThreadsContainer = dynamic(
   () => import('@/components/playground/threads/ThreadsContainer'),
@@ -28,7 +28,7 @@ export default function Playground() {
             <PlaygroundHeader
               rightActions={
                 <>
-                  <CreateThread />
+                  <CreateMenu />
                 </>
               }
             />

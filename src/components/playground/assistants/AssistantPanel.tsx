@@ -14,13 +14,16 @@ import {
 } from '@chakra-ui/react'
 import { Controller, useForm } from 'react-hook-form'
 
+import { NEW_ASST_ID } from '@/utils/constants'
+import { useAssistantContext } from '@/context/AssistantContext'
+
 type FormData = {
   name: string
   instructions: string
   model: string
 }
 
-function valueFromAsst(asst: Assistants.Assistant | null) {
+function valueFromAsst(asst: Assistants.Assistant | undefined) {
   return {
     name: asst?.name || '',
     instructions: asst?.instructions || '',
@@ -28,11 +31,27 @@ function valueFromAsst(asst: Assistants.Assistant | null) {
   }
 }
 
-function FormBody({ assistant }: { assistant: Assistants.Assistant }) {
-  const { trigger: updateAssistant, isMutating } = useMutation<
+function FormBody({
+  assistant,
+  createMode,
+}: {
+  assistant?: Assistants.Assistant
+  createMode: boolean
+}) {
+  const { trigger: upsertAssistant, isMutating } = useMutation<
     Assistants.AssistantUpdateParams,
     Assistants.Assistant
-  >(`/api/assistants/${assistant.id}`)
+  >(
+    createMode
+      ? '/api/assistants'
+      : assistant
+      ? `/api/assistants/${assistant.id}`
+      : null
+  )
+
+  const {
+    urls: { appendPanel },
+  } = useAssistantContext()
 
   const { register, handleSubmit, control, reset, formState } =
     useForm<FormData>({
@@ -55,7 +74,7 @@ function FormBody({ assistant }: { assistant: Assistants.Assistant }) {
   )
 
   const onSubmit = handleSubmit(async (data) => {
-    const res = await updateAssistant(
+    const res = await upsertAssistant(
       {
         instructions: data.instructions,
         model: data.model,
@@ -64,6 +83,9 @@ function FormBody({ assistant }: { assistant: Assistants.Assistant }) {
       {}
     )
     reset(valueFromAsst(res))
+    if (createMode) {
+      appendPanel(res, NEW_ASST_ID)
+    }
   })
 
   return (
@@ -142,13 +164,17 @@ function AssistantPanel({
   asstId: string
   panelWidth: number | string
 }) {
+  const createMode = asstId == NEW_ASST_ID
   const { data: asst, error } = useApi<Assistants.Assistant>(
-    `/api/assistants/${asstId}`
+    !createMode ? `/api/assistants/${asstId}` : null
   )
 
   return (
     <div className="flex grow flex-col pb-4" style={{ width: panelWidth }}>
-      <AssistantPanelHeader assistant={asst}></AssistantPanelHeader>
+      <AssistantPanelHeader
+        assistant={asst}
+        createMode={createMode}
+      ></AssistantPanelHeader>
 
       <div className="flex grow flex-col justify-between">
         <div className="flex grow flex-col py-4">
@@ -159,7 +185,9 @@ function AssistantPanel({
                 : 'Error loading assistant'}
             </PanelLoadingError>
           )}
-          {asst && <FormBody assistant={asst} />}
+          {(asst || createMode) && (
+            <FormBody assistant={asst} createMode={createMode} />
+          )}
         </div>
       </div>
     </div>

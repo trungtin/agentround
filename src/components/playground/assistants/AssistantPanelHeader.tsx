@@ -47,7 +47,7 @@ function AssistantActions(props: {
 
   return (
     <PanelHeaderActions>
-      <Menu isLazy colorScheme="red">
+      <Menu isLazy>
         <MenuButton
           size={'sm'}
           as={IconButton}
@@ -78,8 +78,10 @@ function AssistantActions(props: {
 
 function AssistantPanelHeader({
   assistant,
+  createMode,
 }: {
   assistant: Assistants.Assistant | undefined
+  createMode?: boolean
 }) {
   return (
     <PanelHeader>
@@ -87,7 +89,11 @@ function AssistantPanelHeader({
         <span className="mr-1">
           <FiUsers />
         </span>
-        <span>{assistant?.name || assistant?.id || 'Assistant'}</span>
+        <span>
+          {createMode
+            ? 'Create Assistant'
+            : assistant?.name || assistant?.id || 'Assistant'}
+        </span>
       </PanelHeaderTitle>
       <AssistantActions assistant={assistant}></AssistantActions>
     </PanelHeader>

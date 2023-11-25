@@ -104,7 +104,7 @@ function ThreadActions(props: {
   return (
     <PanelHeaderActions>
       <ThreadActionsRun thread={props.thread} assistant={props.assistant} />
-      <Menu isLazy colorScheme="red">
+      <Menu isLazy>
         <MenuButton
           size={'sm'}
           as={IconButton}
