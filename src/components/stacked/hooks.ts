@@ -12,6 +12,7 @@ import {
   StackedPagesIndexContext,
   ScrollState,
 } from './contexts'
+import { useAssistantContext } from '@/context/AssistantContext'
 
 const throttleTime = 16
 const obstructedOffset = 120
@@ -29,24 +30,30 @@ function useScroll() {
     setWidth(containerRef.current.getBoundingClientRect().width)
   }, [setScroll, setWidth, containerRef])
 
-  const throttledScrollObserver = throttle(scrollObserver, throttleTime)
+  const throttledScrollObserver = useMemo(
+    () => throttle(scrollObserver, throttleTime),
+    [scrollObserver]
+  )
 
-  const setRef = useCallback((node: HTMLDivElement) => {
-    if (node) {
-      // When the ref is first set (after mounting)
-      node.addEventListener('scroll', throttledScrollObserver)
-      containerRef.current = node
-      window.addEventListener('resize', throttledScrollObserver)
-      throttledScrollObserver() // initialization
-    } else if (containerRef.current) {
-      // When unmounting
-      containerRef.current.removeEventListener(
-        'scroll',
-        throttledScrollObserver
-      )
-      window.removeEventListener('resize', throttledScrollObserver)
-    }
-  }, [])
+  const setRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (node) {
+        // When the ref is first set (after mounting)
+        node.addEventListener('scroll', throttledScrollObserver)
+        containerRef.current = node
+        window.addEventListener('resize', throttledScrollObserver)
+        throttledScrollObserver() // initialization
+      } else if (containerRef.current) {
+        // When unmounting
+        containerRef.current.removeEventListener(
+          'scroll',
+          throttledScrollObserver
+        )
+        window.removeEventListener('resize', throttledScrollObserver)
+      }
+    },
+    [throttledScrollObserver]
+  )
 
   return [scroll, width, setRef, containerRef] as const
 }
@@ -77,14 +84,22 @@ export function useStackedPagesProvider({
   )
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({
-        top: 0,
-        left: pageWidth * (stackedPages.length + 1),
-        behavior: 'smooth',
-      })
-    }
+    // hack: delay scroll
+    // but the flash is still there
+    setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: 0,
+          left: pageWidth * (stackedPages.length + 1),
+          behavior: 'smooth',
+        })
+      }
+    }, 100)
   }, [stackedPages, containerRef, pageWidth])
+
+  const {
+    urls: { appendPanel },
+  } = useAssistantContext()
 
   // on scroll or on new page
   useEffect(() => {
@@ -141,7 +156,9 @@ export function useStackedPagesProvider({
   const navigateToStackedPage = useCallback(
     (to: string, index: number = 0) => {
       const existingPage = stackedPages.findIndex((x) => x.id === to)
-      if (existingPage !== -1 && containerRef && containerRef.current) {
+
+      // if page exists, scroll to it
+      if (existingPage !== -1 && containerRef.current) {
         setStackedPageStates((stackedPageStates) => {
           if (!stackedPageStates[to]) {
             return stackedPageStates
@@ -163,20 +180,17 @@ export function useStackedPagesProvider({
         })
         return
       }
-      // TODO: implement navigation
-      // const search = qs.parse(window.location.search.replace(/^\?/, ''))
-      // search.stackedPages = stackedPages
-      //   .slice(1, index + 1)
-      //   .map((x) => x.id)
-      //   .concat(to)
-      // navigate(
-      //   `${window.location.pathname.replace(
-      //     withPrefix('/'),
-      //     '/'
-      //   )}?${qs.stringify(search)}`.replace(/^\/\//, '/')
-      // )
+      // else, append page
+      appendPanel(to)
     },
-    [stackedPages, setStackedPageStates]
+    [
+      appendPanel,
+      stackedPages,
+      setStackedPageStates,
+      pageWidth,
+      obstructedPageWidth,
+      containerRef,
+    ]
   )
 
   const highlightStackedPage = useCallback(

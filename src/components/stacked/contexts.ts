@@ -14,7 +14,7 @@ export type ScrollState = {
 }
 
 export const StackedPagesContext = createContext<{
-  stackedPages: { id: string; data: any }[]
+  stackedPages: { id: string }[]
   stackedPageStates: ScrollState
   navigateToStackedPage: (to: string, index?: number) => void
   highlightStackedPage: (id: string, highlighted?: boolean) => void

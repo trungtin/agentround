@@ -7,6 +7,7 @@ import useWindowWidth from '@/components/hooks/useWindowWidth'
 import {
   PageIndexProvider,
   StackedPageStateProvider,
+  StackedPagesProvider,
 } from '@/components/stacked/contexts'
 import { useStackedPagesProvider } from '@/components/stacked/hooks'
 import { useAuth } from '@/context/AuthProvider'
@@ -110,11 +111,11 @@ function ThreadsContainer(props: Props) {
     const activeSlug = Object.keys(state.stackedPageStates).find(
       (id) => state.stackedPageStates[id].active
     )
-    indexToShow = state.stackedPages.findIndex((page) => page.id === activeSlug)
+    indexToShow = pages.findIndex((page) => page.id === activeSlug)
     if (indexToShow === -1) {
-      indexToShow = state.stackedPages.length - 1
+      indexToShow = pages.length - 1
     }
-    pages = [state.stackedPages[indexToShow]].filter(Boolean)
+    pages = [pages[indexToShow]].filter(Boolean)
   }
 
   {
@@ -139,39 +140,42 @@ function ThreadsContainer(props: Props) {
           width: pageWidth * pages.length + 1,
         }}
       >
-        {/* Render the stacked pages */}
-        {pages.length === 0 && <EmptyThreadsContainer />}
-        {pages.map((page, i) => {
-          const obstructed =
-            indexToShow !== undefined
-              ? false
-              : stackedPageStates[page.id] &&
-                stackedPageStates[page.id].obstructed
-          const overlay =
-            stackedPageStates[page.id] && stackedPageStates[page.id].overlay
-          const highlighted =
-            stackedPageStates[page.id] && stackedPageStates[page.id].highlighted
-          return (
-            <PageIndexProvider value={i} key={page.id}>
-              <ThreadWrapper
-                i={i}
-                id={page.id}
-                title={page.id}
-                overlay={overlay}
-                obstructed={obstructed}
-                highlighted={highlighted}
-              >
-                <StackedPageStateProvider
-                  value={{ active: false, obstructed, overlay, highlighted }}
+        <StackedPagesProvider value={state}>
+          {/* Render the stacked pages */}
+          {pages.length === 0 && <EmptyThreadsContainer />}
+          {pages.map((page, i) => {
+            const obstructed =
+              indexToShow !== undefined
+                ? false
+                : stackedPageStates[page.id] &&
+                  stackedPageStates[page.id].obstructed
+            const overlay =
+              stackedPageStates[page.id] && stackedPageStates[page.id].overlay
+            const highlighted =
+              stackedPageStates[page.id] &&
+              stackedPageStates[page.id].highlighted
+            return (
+              <PageIndexProvider value={i} key={page.id}>
+                <ThreadWrapper
+                  i={i}
+                  id={page.id}
+                  title={page.id}
+                  overlay={overlay}
+                  obstructed={obstructed}
+                  highlighted={highlighted}
                 >
-                  <ThreadProvider threadId={page.id}>
-                    <Thread threadId={page.id} threadWidth={pageWidth} />
-                  </ThreadProvider>
-                </StackedPageStateProvider>
-              </ThreadWrapper>
-            </PageIndexProvider>
-          )
-        })}
+                  <StackedPageStateProvider
+                    value={{ active: false, obstructed, overlay, highlighted }}
+                  >
+                    <ThreadProvider threadId={page.id}>
+                      <Thread threadId={page.id} threadWidth={pageWidth} />
+                    </ThreadProvider>
+                  </StackedPageStateProvider>
+                </ThreadWrapper>
+              </PageIndexProvider>
+            )
+          })}
+        </StackedPagesProvider>
       </div>
     </div>
   )
