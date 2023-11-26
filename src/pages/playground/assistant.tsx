@@ -6,8 +6,9 @@ import React from 'react'
 
 import dynamic from 'next/dynamic'
 
-import { PluginProvider } from '@/context/plugin'
+import PlaygroundModeSelector from '@/components/playground/PlaygroundModeSelector'
 import CreateMenu from '@/components/playground/menu/CreateMenu'
+import { PluginProvider } from '@/context/plugin'
 
 const PanelsContainer = dynamic(
   () => import('@/components/playground/PanelsContainer'),
@@ -20,11 +21,12 @@ export default function Playground() {
   return (
     <React.Fragment>
       <Head>
-        <title>OpenAI Playground Assistant</title>
+        <title>AgentRound: next-gen agent platform</title>
       </Head>
       <main className="max-w-screen relative flex h-screen max-h-screen min-h-screen w-screen flex-col">
         <AssistantProvider>
           <PluginProvider>
+            <PlaygroundModeSelector />
             <PlaygroundHeader
               rightActions={
                 <>

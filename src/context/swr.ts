@@ -26,13 +26,13 @@ type FetcherOptions<M extends FetcherMethods = FetcherMethods> = {
 } | null
 
 /**
- * private hook to create a fetcher function
+ * hook to create a fetcher function
  *
  * @param method HTTP method
  * @param fetcherOptions options to pass to fetch
  * @returns
  */
-function useFetcher(fetcherOptions: FetcherOptions = null) {
+export function useFetcher(fetcherOptions: FetcherOptions = null) {
   const { token } = useAuth()
 
   const fetcher = useCallback(
