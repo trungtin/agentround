@@ -9,8 +9,8 @@ import dynamic from 'next/dynamic'
 import { PluginProvider } from '@/context/plugin'
 import CreateMenu from '@/components/playground/menu/CreateMenu'
 
-const ThreadsContainer = dynamic(
-  () => import('@/components/playground/threads/ThreadsContainer'),
+const PanelsContainer = dynamic(
+  () => import('@/components/playground/PanelsContainer'),
   {
     ssr: false,
   }
@@ -33,7 +33,7 @@ export default function Playground() {
               }
             />
             <div className="flex h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] grow flex-row">
-              <ThreadsContainer></ThreadsContainer>
+              <PanelsContainer></PanelsContainer>
             </div>
           </PluginProvider>
         </AssistantProvider>

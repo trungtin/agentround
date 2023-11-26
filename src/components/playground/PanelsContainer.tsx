@@ -12,8 +12,8 @@ import {
 import { useStackedPagesProvider } from '@/components/stacked/hooks'
 import { useAuth } from '@/context/AuthProvider'
 import { useSearchParams } from 'next/navigation'
-import Thread from './Thread'
-import AssistantPanel from '../assistants/AssistantPanel'
+import AssistantPanel from './assistants/AssistantPanel'
+import Thread from './threads/Thread'
 
 const NOTE_WIDTH = 576 // w-xl
 
@@ -86,7 +86,7 @@ function EmptyThreadsContainer() {
 
 type Props = {}
 
-function ThreadsContainer(props: Props) {
+function PanelsContainer(props: Props) {
   const { token } = useAuth()
   const [width] = useWindowWidth()
 
@@ -194,4 +194,4 @@ function ThreadsContainer(props: Props) {
   )
 }
 
-export default ThreadsContainer
+export default PanelsContainer
