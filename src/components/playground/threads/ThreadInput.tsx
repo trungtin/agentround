@@ -105,55 +105,6 @@ async function processMessage(
   }
 }
 
-function UpdateAssistantPopover({
-  open,
-  onUpdated,
-  thread,
-}: {
-  open: boolean
-  onUpdated: () => void
-  thread: Threads.Thread | undefined
-}) {
-  const [selectedAssistant, setSelectedAssistant] =
-    useState<Assistants.Assistant | null>(null)
-
-  const { trigger: updateThreadApi, isMutating: updating } = useUpdateThread(
-    thread?.id
-  )
-  return (
-    <Popover isOpen={open} placement="top-start" closeOnBlur={false}>
-      <PopoverContent p={5}>
-        <FocusLock persistentFocus={false}>
-          <div className="mb-2 text-sm font-medium text-gray-900">
-            Assign assistant to thread
-          </div>
-
-          <ButtonGroup size="sm">
-            <SelectAssistant onSelectAssistant={setSelectedAssistant} />
-            <IconButton
-              icon={<FiCheck />}
-              aria-label="Create new thread"
-              onClick={() => {
-                if (selectedAssistant) {
-                  updateThreadApi({
-                    metadata: {
-                      preferred_assistant_id: selectedAssistant.id,
-                    },
-                  }).then(() => {
-                    onUpdated()
-                  })
-                }
-              }}
-              isDisabled={!selectedAssistant}
-              isLoading={updating}
-            ></IconButton>
-          </ButtonGroup>
-        </FocusLock>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
 type PluginCommand = {
   id: string
   name: string
@@ -262,9 +213,11 @@ function TextareaWithMentions({
 
 type Props = {
   thread: Threads.Thread | undefined
+  tempAsst: Assistants.Assistant | null | undefined
+  setTempAsst: (a: Assistants.Assistant | null | undefined) => void
 }
 
-function ThreadInput({ thread }: Props) {
+function ThreadInput({ thread, tempAsst, setTempAsst }: Props) {
   const [input, setInput] = useState('')
   const [files, setFiles] = useState<File[]>([])
 
@@ -272,8 +225,6 @@ function ThreadInput({ thread }: Props) {
     Threads.Runs.RunCreateParams | undefined,
     Threads.Runs.Run
   >(thread ? `/threads/${thread.id}/runs` : null)
-
-  const [asstSelectOpen, setAsstSelectOpen] = useState(false)
 
   const sendDisabled = !thread || (!input && !files.length)
 
@@ -317,7 +268,7 @@ function ThreadInput({ thread }: Props) {
       threadMessages?.data
     )
     rawAddMessage(plainInput)
-  }, [rawAddMessage, input, pluginCommands])
+  }, [rawAddMessage, input, pluginCommands, threadMessages?.data])
 
   const addAndRun = useCallback(async () => {
     if (!thread) return
@@ -333,7 +284,13 @@ function ThreadInput({ thread }: Props) {
     if (!preferredAssistantId && plainInput) {
       preferredAssistantId = (thread.metadata as any)?.preferred_assistant_id
 
-      if (!preferredAssistantId) return setAsstSelectOpen(true)
+      if (!preferredAssistantId) {
+        if (!tempAsst) {
+          return setTempAsst(null)
+        } else {
+          preferredAssistantId = tempAsst.id
+        }
+      }
     }
 
     const threadMessage = await rawAddMessage(plainInput)
@@ -341,7 +298,16 @@ function ThreadInput({ thread }: Props) {
     runThread({
       assistant_id: preferredAssistantId,
     })
-  }, [runThread, thread, input, pluginCommands, rawAddMessage])
+  }, [
+    runThread,
+    thread,
+    threadMessages?.data,
+    input,
+    pluginCommands,
+    rawAddMessage,
+    tempAsst,
+    setTempAsst,
+  ])
 
   const onInputChange = useCallback(
     (e) => {
@@ -360,7 +326,7 @@ function ThreadInput({ thread }: Props) {
   const threadInputRef = useRef<HTMLDivElement>(null)
   return (
     <div
-      className="-mx-2 space-y-2 rounded-lg border p-4 shadow-xl focus-within:border-gray-300 focus-within:shadow-md"
+      className="-mx-2 space-y-2 rounded-lg border bg-white p-4 shadow-xl focus-within:border-gray-300 focus-within:shadow-md"
       ref={threadInputRef}
     >
       <Textarea
@@ -378,6 +344,10 @@ function ThreadInput({ thread }: Props) {
         commands={pluginCommands}
         // where to render the suggestions
         portalRef={threadInputRef}
+        onFocus={() => {
+          // hide the assistant select error when the input is focused
+          if (tempAsst === null) setTempAsst(undefined)
+        }}
       ></Textarea>
       <ButtonGroup size="sm" className="flex space-x-2">
         <Button
@@ -393,13 +363,6 @@ function ThreadInput({ thread }: Props) {
         >
           Add and run
         </Button>
-        <UpdateAssistantPopover
-          open={asstSelectOpen}
-          thread={thread}
-          onUpdated={() => {
-            setAsstSelectOpen(false)
-          }}
-        />
         <Button isDisabled={sendDisabled} onClick={addMessage}>
           Add
         </Button>

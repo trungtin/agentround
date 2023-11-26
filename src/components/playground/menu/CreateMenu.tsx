@@ -2,6 +2,7 @@ import { useAssistantContext } from '@/context/AssistantContext'
 import { useAuth } from '@/context/AuthProvider'
 import { useMutation } from '@/context/swr'
 import { Threads } from '@/types'
+import { NEW_ASST_ID } from '@/utils/constants'
 import {
   IconButton,
   Menu,
@@ -16,7 +17,7 @@ function CreateMenu(props: {}) {
   const assistantCtx = useAssistantContext()
   const { token } = useAuth()
 
-  const { trigger: addThread, isMutating: creating } = useMutation<
+  const { trigger: addThread, isMutating: addingThread } = useMutation<
     Threads.ThreadCreateParams | undefined,
     Threads.Thread
   >('/threads')
@@ -27,8 +28,8 @@ function CreateMenu(props: {}) {
     })
   }, [addThread, assistantCtx.urls])
   const createAssistant = useCallback(() => {
-    return assistantCtx.urls.appendPanel('asst_[[NEW]]')
-  }, [])
+    return assistantCtx.urls.appendPanel(NEW_ASST_ID)
+  }, [assistantCtx.urls])
 
   if (!token) {
     return null
@@ -42,6 +43,7 @@ function CreateMenu(props: {}) {
           aria-label="Options"
           icon={<FiPlus />}
           variant="outline"
+          isLoading={addingThread}
         />
         <MenuList>
           <MenuItem icon={<FiClipboard />} onClick={createThread}>

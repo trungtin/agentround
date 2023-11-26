@@ -1,13 +1,15 @@
+import { useLastRun, useUpdateThread } from '@/context/api'
 import { useApi, useMutation } from '@/context/swr'
 import { Assistants, CursorPageResponse, Threads } from '@/types'
-import { APIError } from '@/utils/errors'
-import { memo, useCallback, useEffect } from 'react'
+import { Button, SlideFade } from '@chakra-ui/react'
+import { memo, useCallback, useEffect, useState } from 'react'
+import { FiCheck } from 'react-icons/fi'
+import { PanelLoadingError } from '../panel/Panel'
+import SelectAssistant from './SelectAssistant'
 import ThreadHeader from './ThreadHeader'
 import ThreadInput from './ThreadInput'
 import ThreadMessages from './ThreadMessages'
-import { useLastRun } from '@/context/api'
 import { stoppedStepStatuses, waitingRunStatuses } from './runs'
-import { PanelLoadingError } from '../panel/Panel'
 
 function ThreadRunStep({ step }: { step: Threads.Runs.RunStep }) {
   return (
@@ -80,6 +82,54 @@ function ThreadRunStatus({
   )
 }
 
+function NoPreferredAssistant({
+  thread,
+  tempAsst,
+  setTempAsst,
+}: {
+  thread: Threads.Thread
+  tempAsst: Assistants.Assistant | null | undefined
+  setTempAsst: (a: Assistants.Assistant | undefined | null) => void
+}) {
+  const { trigger: updateThreadApi, isMutating: updating } = useUpdateThread(
+    thread.id
+  )
+
+  const assignAssistant = useCallback(() => {
+    if (!tempAsst) return setTempAsst(null)
+    updateThreadApi({ metadata: { preferred_assistant_id: tempAsst.id } })
+  }, [tempAsst, setTempAsst, updateThreadApi])
+  const onSelect = useCallback(
+    (a) => {
+      setTempAsst(a || undefined)
+    },
+    [setTempAsst]
+  )
+
+  return (
+    <div className="-mb-2 rounded-lg border p-4">
+      <div className="flex flex-row space-x-2">
+        <SelectAssistant
+          onSelectAssistant={onSelect}
+          isInvalid={tempAsst === null}
+        ></SelectAssistant>
+        <Button
+          colorScheme="green"
+          size="sm"
+          className="shrink-0 px-2"
+          isLoading={updating}
+          onClick={assignAssistant}
+        >
+          <span className="mr-1">
+            <FiCheck />
+          </span>
+          Set default
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function Thread({
   threadId,
   threadWidth,
@@ -95,6 +145,13 @@ function Thread({
   const { data: preferredAssistant } = useApi<Assistants.Assistant>(
     preferredAssistantId ? `/api/assistants/${preferredAssistantId}` : null
   )
+
+  // temporary assistant for the thread
+  // undefined: default empty state
+  // null: show error empty state (red border)
+  const [tempAssistant, setTempAssistant] = useState<
+    Assistants.Assistant | null | undefined
+  >(undefined)
 
   const messagesPath = thread && `/api/threads/${threadId}/messages`
   const { data: messages, refresh: refreshMessages } =
@@ -151,7 +208,27 @@ function Thread({
           ></ThreadRunStatus>
         </div>
         <div className="sticky bottom-4 bg-white">
-          <ThreadInput thread={thread} />
+          {thread && (
+            <div className="relative -z-10">
+              <SlideFade
+                offsetY="20px"
+                in={!preferredAssistantId}
+                unmountOnExit
+                transition={{ enter: { delay: 1 } }}
+              >
+                <NoPreferredAssistant
+                  thread={thread}
+                  tempAsst={tempAssistant}
+                  setTempAsst={setTempAssistant}
+                />
+              </SlideFade>
+            </div>
+          )}
+          <ThreadInput
+            thread={thread}
+            tempAsst={tempAssistant}
+            setTempAsst={setTempAssistant}
+          />
         </div>
       </div>
     </div>

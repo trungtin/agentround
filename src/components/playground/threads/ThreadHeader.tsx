@@ -111,6 +111,7 @@ function ThreadActions(props: {
           aria-label="Options"
           icon={<FiMoreVertical />}
           variant="outline"
+          isLoading={creating || deleting}
         />
         <MenuList>
           <MenuItem icon={<FiFilePlus />} onClick={newThread}>

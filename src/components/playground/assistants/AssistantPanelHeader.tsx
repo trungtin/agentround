@@ -23,7 +23,7 @@ function AssistantActions(props: {
 }) {
   const assistantCtx = useAssistantContext()
   const stackedPageState = useStackedPageState()
-  const { trigger: addThread } = useMutation<
+  const { trigger: addThread, isMutating: addingThread } = useMutation<
     Threads.ThreadCreateParams | undefined,
     Threads.Thread
   >('/threads')
@@ -54,6 +54,7 @@ function AssistantActions(props: {
           aria-label="Options"
           icon={<FiMoreVertical />}
           variant="outline"
+          isLoading={addingThread}
         />
         <MenuList>
           <MenuItem icon={<FiFilePlus />} onClick={newThread}>

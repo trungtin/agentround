@@ -1,6 +1,6 @@
 import { Threads } from '@/types'
-import ThreadMessage from './ThreadMessage'
 import { useMemo } from 'react'
+import ThreadMessage from './ThreadMessage'
 
 function EmptyThreadMessages() {
   return (
