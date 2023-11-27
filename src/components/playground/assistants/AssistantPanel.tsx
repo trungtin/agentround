@@ -148,7 +148,7 @@ function FormBody({
               size="sm"
               isLoading={isMutating}
             >
-              Submit
+              Save
             </Button>
           </div>
         </div>

@@ -326,7 +326,7 @@ function ThreadInput({ thread, tempAsst, setTempAsst }: Props) {
   const threadInputRef = useRef<HTMLDivElement>(null)
   return (
     <div
-      className="-mx-2 space-y-2 rounded-lg border bg-white p-4 shadow-xl focus-within:border-gray-300 focus-within:shadow-md"
+      className="-mx-2 space-y-2 rounded-lg border bg-white p-4 shadow-xl transition-shadow duration-150 focus-within:border-gray-300 focus-within:shadow-md"
       ref={threadInputRef}
     >
       <Textarea

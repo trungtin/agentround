@@ -195,8 +195,8 @@ function ModeOpenAIContent({ selectMode }) {
               >
                 OpenAI dashboard
               </a>
-              . All requests are made on the client side, so your token is never
-              sent to the server. If you would like more information look at the{' '}
+              . All requests are made directly from your browser and your token is 
+              never stored on the server. If you would like more information look at the{' '}
               <a
                 href="https://github.com/trungtin/agents-playground"
                 target="_blank"
@@ -216,6 +216,7 @@ function ModeOpenAIContent({ selectMode }) {
                     {...register('token')}
                     placeholder="sk-NhU98cac878..."
                     size="md"
+                    type="password"
                   />
                 </div>
                 <FormErrorMessage>

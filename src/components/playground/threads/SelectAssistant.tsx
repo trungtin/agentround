@@ -21,7 +21,7 @@ function SelectAssistant({
           : placeholder || 'Select an assistant'
       }
       size="sm"
-      className="min-w-8"
+      className="min-w-8 !rounded-md"
       onChange={(e) => {
         const assistant = assistants?.data.find(
           (assistant) => assistant.id === e.target.value
