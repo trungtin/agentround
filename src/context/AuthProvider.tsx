@@ -14,7 +14,7 @@ const AuthContext = React.createContext<{
 }>(defaultContext)
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [token, setToken] = React.useState<string | undefined>(
+  const [token, setToken] = React.useState(
     (secureLocalStorage.getItem('open-ai-token') as string) || ''
   )
 
