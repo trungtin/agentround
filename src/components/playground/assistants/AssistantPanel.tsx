@@ -181,7 +181,7 @@ function AssistantPanel({
           {error && (
             <PanelLoadingError>
               {error.status == 404
-                ? 'Assistant has been deleted. Please close this panel.'
+                ? 'This agent has been deleted. Please close this panel.'
                 : 'Error loading assistant'}
             </PanelLoadingError>
           )}

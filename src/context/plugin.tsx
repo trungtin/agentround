@@ -49,7 +49,7 @@ export const PluginProvider = ({ children }) => {
           if (assistants?.find((a) => a.id === id)) {
             return mutate('/assistants/' + id, params)
           }
-          throw new Error('Assistant not found')
+          throw new Error('Agent not found')
         },
         deleteAssistant: async (id) => {
           const assistants = await context.listAssistants()
@@ -59,7 +59,7 @@ export const PluginProvider = ({ children }) => {
             })
             return
           }
-          throw new Error('Assistant not found')
+          throw new Error('Agent not found')
         },
         createThread: (params) => {
           return createThread({

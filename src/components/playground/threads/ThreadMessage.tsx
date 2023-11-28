@@ -15,7 +15,7 @@ function MessageAuthor({ message }: { message: Props['message'] }) {
   )
   return (
     <div className="text-sm font-bold">
-      {message.role === 'user' ? 'User' : data?.name || 'Assistant'}:
+      {message.role === 'user' ? 'User' : data?.name || 'Agent'}:
     </div>
   )
 }

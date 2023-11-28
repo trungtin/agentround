@@ -27,7 +27,7 @@ function ThreadRunError({ run }: { run: Threads.Runs.Run | undefined }) {
   )
   return (
     <div>
-      <div className="text-sm font-bold">{assistant?.name || 'Assistant'}</div>
+      <div className="text-sm font-bold">{assistant?.name || 'Agent'}</div>
       <div className="text-rose-400">{run?.last_error?.message}</div>
     </div>
   )

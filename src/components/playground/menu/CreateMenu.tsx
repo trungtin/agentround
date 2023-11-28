@@ -47,7 +47,7 @@ function CreateMenu(props: {}) {
             New Thread
           </MenuItem>
           <MenuItem icon={<FiUsers />} onClick={createAssistant}>
-            New Assistant
+            New Agent
           </MenuItem>
         </MenuList>
       </Menu>

@@ -69,7 +69,7 @@ function AssistantActions(props: {
             onClick={deleteAssistant}
             isDisabled={!props.assistant}
           >
-            Delete Assistant
+            Delete Agent
           </MenuItem> */}
         </MenuList>
       </Menu>
@@ -92,7 +92,7 @@ function AssistantPanelHeader({
         </span>
         <span>
           {createMode
-            ? 'Create Assistant'
+            ? 'Create Agent'
             : assistant?.name || assistant?.id || 'Assistant'}
         </span>
       </PanelHeaderTitle>
