@@ -25,7 +25,7 @@ function MessageContent({ message }: { message: Props['message'] }) {
     <div className="">
       {message.content?.map((content, idx) => {
         if (content.type == 'text') {
-          // TODO: implement annotation
+          // TODO: implement annotation from openai response
           return (
             <div key={idx}>
               <Markdown

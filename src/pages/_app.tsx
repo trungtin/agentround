@@ -14,11 +14,12 @@ export default function App({ Component, pageProps }: AppProps) {
       '(prefers-color-scheme: dark)'
     ).matches
 
-    if (isDarkSet || (!isThemeStored && isDarkPrefered)) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    // TODO: handle dark mode
+    // if (isDarkSet || (!isThemeStored && isDarkPrefered)) {
+    //   document.documentElement.classList.add('dark')
+    // } else {
+    //   document.documentElement.classList.remove('dark')
+    // }
   }
 
   return (
