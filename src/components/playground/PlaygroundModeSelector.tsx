@@ -17,13 +17,15 @@ import {
 } from '@chakra-ui/react'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiArrowLeft, FiCheckCircle, FiInfo } from 'react-icons/fi'
 
 import { useAuth } from '@/context/AuthProvider'
 import { useFetcher } from '@/context/swr'
 import { APIError } from '@/utils/errors'
 import { useForm } from 'react-hook-form'
+
+import * as gtag from '@/utils/gtag'
 
 function Item({
   children,
@@ -123,6 +125,11 @@ function ModeSelectContent({
 }
 
 function ModeChatGPTContent({ selectMode }) {
+  useEffect(() => {
+    gtag.event('add_to_wishlist', {
+      items: [{ item_id: 'chatgpt_api' }],
+    })
+  }, [])
   return (
     <ModalContent>
       <div className="absolute left-2 top-3">
@@ -195,8 +202,9 @@ function ModeOpenAIContent({ selectMode }) {
               >
                 OpenAI dashboard
               </a>
-              . All requests are made directly from your browser and your token is 
-              never stored on the server. If you would like more information look at the{' '}
+              . All requests are made directly from your browser and your token
+              is never stored on the server. If you would like more information
+              look at the{' '}
               <a
                 href="https://github.com/trungtin/agents-playground"
                 target="_blank"

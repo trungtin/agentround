@@ -31,9 +31,6 @@ function CreateMenu(props: {}) {
     return assistantCtx.urls.appendPanel(NEW_ASST_ID)
   }, [assistantCtx.urls])
 
-  if (!token) {
-    return null
-  }
   return (
     <div>
       <Menu isLazy>

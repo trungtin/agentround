@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import PlaygroundModeSelector from '@/components/playground/PlaygroundModeSelector'
 import CreateMenu from '@/components/playground/menu/CreateMenu'
 import { PluginProvider } from '@/context/plugin'
+import ClientOnly from '@/components/misc/ClientOnly'
 
 const PanelsContainer = dynamic(
   () => import('@/components/playground/PanelsContainer'),
@@ -26,7 +27,9 @@ export default function Playground() {
       <main className="max-w-screen relative flex h-screen max-h-screen min-h-screen w-screen flex-col">
         <AssistantProvider>
           <PluginProvider>
-            <PlaygroundModeSelector />
+            <ClientOnly>
+              <PlaygroundModeSelector />
+            </ClientOnly>
             <PlaygroundHeader
               rightActions={
                 <>

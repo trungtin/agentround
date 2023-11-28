@@ -68,7 +68,7 @@ function MissingTokenContainer() {
     <div className="flex flex-grow flex-col items-center justify-center">
       <div className="mb-2 text-xl font-semibold">No API token</div>
       <div className="text-md font-medium text-gray-500">
-        Add your API token using the top right button.
+        Waiting for API token to be set...
       </div>
     </div>
   )
